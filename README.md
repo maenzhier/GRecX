@@ -1,2 +1,3 @@
 # GRecX
-GNN-based Recommendation Benchma
+A Fair Benchmark for GNN-based Recommendation
+
