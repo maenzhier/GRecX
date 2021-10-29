@@ -6,8 +6,8 @@ import numpy as np
 import os
 from tqdm import tqdm
 
-from diffnet.config import data_dir, train_path, test_path, links_path, num_negs, cached_data_path, cached_neg_data_path
-from diffnet.utils.data_utils import load_cache
+from grecx.config import data_dir, train_path, test_path, links_path, num_negs, cached_data_path, cached_neg_data_path
+from grecx.utils.data_utils import load_cache
 
 
 def read_edge_info(file_path):

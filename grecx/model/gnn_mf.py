@@ -4,9 +4,9 @@ import tensorflow as tf
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
-from data.config import embedding_size
-from diffnet.data.load_data import *
-from diffnet.evaluation.model_evaluation import evaluate
+from grecx.config import embedding_size
+from grecx.data.load_data import *
+from grecx.evaluation.model_evaluation import evaluate
 
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils

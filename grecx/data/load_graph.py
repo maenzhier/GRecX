@@ -1,6 +1,6 @@
 # coding = utf8
 
-from diffnet.data.utils import read_graph
+from grecx.data.utils import read_graph
 
 
 def generate_user_item_graph(order):
