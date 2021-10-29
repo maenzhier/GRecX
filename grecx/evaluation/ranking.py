@@ -70,14 +70,14 @@ def evaluate_mean_ndcg_score(user_items_dict, user_neg_items_dict,
     return mean_ndcg_dict
 
 
-user_items_dict = {
-    0: [1, 2],
-    1: [2, 3]
-}
-user_neg_items_dict = {
-    0: [5, 6],
-    1: [1, 5]
-}
+# user_items_dict = {
+#     0: [1, 2],
+#     1: [2, 3]
+# }
+# user_neg_items_dict = {
+#     0: [5, 6],
+#     1: [1, 5]
+# }
 
 
 
