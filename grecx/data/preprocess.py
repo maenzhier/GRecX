@@ -1,14 +1,14 @@
 # coding = utf8
 
 import tensorflow as tf
-from diffnet.data.load_data import user_users_dict, user_user_edges, num_users, num_items, train_user_items_dict
-from diffnet.data.load_data import user_item_edges, train_user_item_edges
+from grecx.data.load_data import user_users_dict, user_user_edges, num_users, num_items, train_user_items_dict
+from grecx.data.load_data import user_item_edges, train_user_item_edges
 import scipy.sparse as sp
 from scipy.sparse import *
 import numpy as np
 
 from tqdm import tqdm
-from diffnet.data.utils import save_graph
+from grecx.data.utils import save_graph
 
 
 def norm_adj_rows(adj):
@@ -94,7 +94,7 @@ def build_user_item_graph():
     #02_ = 434(0.005,0.002,0.0005), alpha = 0.2
     #03_ = 545(0.005,0.003,0.0001), alpha = 0.2
     #04_ = 656(0.005,0.002,0.0005), alpha = 0.2
-    #f_0_ = 322(0.005,0.001,0.001), alpha = 0.2, flickr dataset
+    #f_0_ = 322(0.005,0.001,0.001), alpha = 0.2, flickr diff_dataset
     user_user_graph = surf(norm_user_item_adj, norm_item_user_adj, 3)
     item_item_graph = surf(norm_item_user_adj, norm_user_item_adj, 2)
     user_user_social_graph = social_surf(norm_user_user_social_adj, 2)

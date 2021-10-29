@@ -69,11 +69,11 @@
 # print(a,b)
 
 
-import numpy as np
-import tensorflow as tf
-#
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
+# import numpy as np
+# import tensorflow as tf
+# #
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = ""
 #
 # d1 = np.random.rand(3, 4)
 # print(d1)
@@ -160,9 +160,9 @@ import numpy as np
 # print(d)
 # d1 = map(lambda x: x+10, d)
 # print(list(d1))
-def fn(x):
-    x = int(x / 4)
-    return x
-d = tf.map_fn(fn=fn, elems=tf.constant([3, 5, 2]))
-print(d)
+# def fn(x):
+#     x = int(x / 4)
+#     return x
+# d = tf.map_fn(fn=fn, elems=tf.constant([3, 5, 2]))
+# print(d)
 
