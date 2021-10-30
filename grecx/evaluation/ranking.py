@@ -25,16 +25,16 @@ def evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_i
 
         user_rank_score_matrix = np.concatenate(user_rank_score_matrix, axis=1)
 
-        for user_index, user_rank_scores in zip(batch_user_indices, user_rank_score_matrix):
+        for user, user_rank_scores in zip(batch_user_indices, user_rank_score_matrix):
 
             result = {}
             results.append(result)
 
-            user_index = user_index.numpy()
+            user = user.numpy()
             # train_items = train_user_items_dict[user_index]
-            items = user_items_dict[user_index]
+            items = user_items_dict[user]
 
-            mask_items = user_mask_items_dict[user_index]
+            mask_items = user_mask_items_dict[user]
 
             # candidate_items = np.array(list(items) + list(user_neg_items_dict[user_index]))
             pred_items = np.argsort(user_rank_scores)[::-1][:k_list[-1] + len(mask_items)]
@@ -62,7 +62,7 @@ def evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_i
     for metric in metrics:
         scores = [result[metric] for result in results]
         mean_ndcg = np.mean(scores)
-        print(metric, mean_ndcg, len(scores))
+        # print(metric, mean_ndcg, len(scores))
         mean_ndcg_dict[metric] = mean_ndcg
     return mean_ndcg_dict
 
@@ -93,16 +93,16 @@ def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
 
         user_rank_score_matrix = np.concatenate(user_rank_score_matrix, axis=1)
 
-        for user_index, user_rank_scores in zip(batch_user_indices, user_rank_score_matrix):
+        for user, user_rank_scores in zip(batch_user_indices, user_rank_score_matrix):
 
             result = {}
             results.append(result)
 
-            user_index = user_index.numpy()
+            user = user.numpy()
             # train_items = train_user_items_dict[user_index]
-            items = user_items_dict[user_index]
+            items = user_items_dict[user]
 
-            candidate_items = np.array(list(items) + list(user_neg_items_dict[user_index]))
+            candidate_items = np.array(list(items) + list(user_neg_items_dict[user]))
             candidate_scores = user_rank_scores[candidate_items]
             candidate_rank = np.argsort(candidate_scores)[::-1][:k_list[-1]]
             pred_items = candidate_items[candidate_rank]
@@ -125,7 +125,7 @@ def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
     for metric in metrics:
         scores = [result[metric] for result in results]
         mean_ndcg = np.mean(scores)
-        print(metric, mean_ndcg, len(scores))
+        # print(metric, mean_ndcg, len(scores))
         mean_ndcg_dict[metric] = mean_ndcg
     return mean_ndcg_dict
 
@@ -138,9 +138,14 @@ def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
 #     0: [5, 6],
 #     1: [1, 5]
 # }
-
-
-
+#
+# user_mask_items_dict = {
+#     0: [4, 6],
+#     1: [1, 8]
+# }
+#
+#
+#
 # def random_score_func(batch_user_indices, batch_item_indices):
 #
 #     batch_user_indices = batch_user_indices
@@ -148,10 +153,14 @@ def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
 #
 #     score_matrix = []
 #     for user_index in batch_user_indices:
-#         test_item_indices = user_items_dict[user_index]
-#         scores = [1.0 if item_index in test_item_indices else 0.0 for item_index in batch_item_indices]
+#         item_indices = user_items_dict[user_index]
+#         mask_item_indices = user_mask_items_dict[user_index]
+#         # scores = [1.0 if item_index in item_indices else 0.0 for item_index in batch_item_indices]
+#         scores = [0.0 if item_index in mask_item_indices + item_indices else 1.0 for item_index in batch_item_indices]
+#         print(scores)
 #         score_matrix.append(scores)
 #
 #     return np.array(score_matrix)
 #
-# print(evaluate_mean_ndcg_score(user_items_dict, user_neg_items_dict, random_score_func))
+# # print(evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict, random_score_func))
+# print(evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_items=13, ranking_score_func=random_score_func))
