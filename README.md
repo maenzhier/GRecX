@@ -1,5 +1,5 @@
 <p align="center">
-<img src="GRecX_LOGO_SQUARE.png" width="400"/>
+<img src="GRecX_LOGO_SQUARE.png" width="300"/>
 </p>
 
 # GRecX
