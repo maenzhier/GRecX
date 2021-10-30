@@ -3,16 +3,18 @@
 import tensorflow as tf
 import os
 import numpy as np
+
+from grecx.evaluation.ranking import evaluate_mean_candidate_ndcg_score
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from grecx.config import embedding_size
 from grecx.datasets import DiffNetYelp, DiffNetFlickr
-from grecx.evaluation import evaluate_mean_ndcg_score
+from grecx.evaluation import evaluate_mean_candidate_ndcg_score
 
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
-from grecx.data.load_graph import generate_user_item_graph
 
 
 drop_rate = 0.15
@@ -111,5 +113,5 @@ for epoch in range(0, epoches):
 
             print("epoch = {}\tstep = {}\tloss = {}".format(epoch, step, loss))
             if step == 0:
-                evaluate_mean_ndcg_score(test_user_items_dict, user_neg_items_dict, mf_score_func)
+                evaluate_mean_candidate_ndcg_score(test_user_items_dict, user_neg_items_dict, mf_score_func)
 
