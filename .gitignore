@@ -133,6 +133,9 @@ dmypy.json
 .pyre/
 
 diff_dataset/
-demo/
 test/
 grecx/data/
+
+demo/data/
+demo/myModel/
+demo/tmp/
