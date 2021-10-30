@@ -47,7 +47,8 @@ class MF(tf.keras.Model):
         return user_h, item_h
 
 
-num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetYelp().load_data()
+# num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetYelp().load_data()
+num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetFlickr().load_data()
 
 model = MF(num_users, num_items, embedding_size)
 
