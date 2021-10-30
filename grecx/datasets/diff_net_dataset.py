@@ -94,7 +94,7 @@ class DiffNetYelp(DiffNetDataset):
 class DiffNetFlickr(DiffNetDataset):
     def __init__(self, dataset_root_path=None, featureless=True):
         super().__init__(
-            dataset_name="DiffNetFlickr",
+            dataset_name="diff_net_flickr",
             featureless=featureless,
             download_urls="https://github.com/maenzhier/grecx_datasets/raw/main/flickr/diff_net_flickr.zip",
             dataset_root_path=dataset_root_path,
