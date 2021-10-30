@@ -21,4 +21,4 @@ num_negs = 1000
 embedding_size = 64
 # embedding_size = 256
 
-print(os.listdir(data_dir))
+# print(os.listdir(data_dir))

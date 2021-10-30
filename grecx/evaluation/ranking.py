@@ -10,7 +10,7 @@ from grecx.metrics.ranking import ndcg_score
 
 def evaluate_mean_ndcg_score(user_items_dict, user_neg_items_dict,
                              ranking_score_func,
-                             k_list=[10], user_batch_size=1000, item_batch_size=5000, num_items=None):
+                             k_list=[5, 10, 15], user_batch_size=1000, item_batch_size=5000, num_items=None):
 
     if num_items is None:
         num_items = 0
@@ -65,7 +65,7 @@ def evaluate_mean_ndcg_score(user_items_dict, user_neg_items_dict,
     for metric in metrics:
         scores = [result[metric] for result in results]
         mean_ndcg = np.mean(scores)
-        # print(metric, mean_score, len(scores))
+        print(metric, mean_ndcg, len(scores))
         mean_ndcg_dict[metric] = mean_ndcg
     return mean_ndcg_dict
 
