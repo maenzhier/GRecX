@@ -17,7 +17,7 @@ from tf_geometric.utils import tf_utils
 
 
 
-drop_rate = 0.15
+drop_rate = 0.3
 lr = 3e-3
 # l2 = 5e-5
 l2 = 1e-2
@@ -40,11 +40,11 @@ class MF(tf.keras.Model):
 
     def call(self, inputs, training=None, mask=None):
 
-        # user_h = self.drop_layer(self.user_embeddings, training=training)
-        user_h = self.user_embeddings
+        user_h = self.drop_layer(self.user_embeddings, training=training)
+        # user_h = self.user_embeddings
 
-        # item_h = self.drop_layer(self.item_embeddings, training=training)
-        item_h = self.item_embeddings
+        item_h = self.drop_layer(self.item_embeddings, training=training)
+        # item_h = self.item_embeddings
 
         return user_h, item_h
 
