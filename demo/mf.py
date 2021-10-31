@@ -6,18 +6,20 @@ import numpy as np
 
 from grecx.evaluation.ranking import evaluate_mean_candidate_ndcg_score
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 from grecx.config import embedding_size
 from grecx.datasets import DiffNetYelp, DiffNetFlickr
-from grecx.evaluation import evaluate_mean_candidate_ndcg_score
+# from grecx.evaluation import evaluate_mean_candidate_ndcg_score
 
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
+# drop_rate = 0.6
+# lr = 3e-3
+# l2 = 1e-2
 
-
-drop_rate = 0.3
+drop_rate = 0.55
 lr = 3e-3
 # l2 = 5e-5
 l2 = 1e-2
@@ -35,7 +37,6 @@ class MF(tf.keras.Model):
 
         self.user_embeddings = tf.Variable(tf.random.truncated_normal([self.num_users, self.emb_dim], stddev=np.sqrt(1/self.emb_dim)))
         self.item_embeddings = tf.Variable(tf.random.truncated_normal([self.num_items, self.emb_dim], stddev=np.sqrt(1/self.emb_dim)))
-
         self.drop_layer = tf.keras.layers.Dropout(drop_rate)
 
     def call(self, inputs, training=None, mask=None):
