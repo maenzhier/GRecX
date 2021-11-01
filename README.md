@@ -20,5 +20,5 @@ A Fair Benchmark for GNN-based Recommendation
 
 | Algo | nDCG@5 | nDCG@10 | nDCG@15 |
 | --- | --- | --- | --- |
-| MF| 0.096275 | 0.105943 | 0.115583 |
+| MF| 0.097722 | 0.107193 | 0.115850 |
 | Ours-MF | 0.100690 | 0.110089 | 0.119592 |

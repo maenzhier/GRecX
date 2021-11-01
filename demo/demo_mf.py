@@ -17,7 +17,7 @@ from tf_geometric.utils import tf_utils
 
 # drop_rate = 0.6
 # lr = 3e-3
-# l2 = 1e-2
+# l2 = 3e-2
 
 drop_rate = 0.6
 lr = 3e-3
@@ -109,7 +109,8 @@ for epoch in range(0, epoches):
             mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
             mf_l2_loss = tf.add_n(mf_l2_losses)
 
-            loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-7 * mf_l2_loss
+            # loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-7 * mf_l2_loss
+            loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-8 * mf_l2_loss
 
         vars = tape.watched_variables()
         grads = tape.gradient(loss, vars)
