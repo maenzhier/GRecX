@@ -7,7 +7,7 @@ import numpy as np
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
@@ -26,19 +26,20 @@ train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
 # drop_rate = 0.6
-# lr = 5e-3
-lr = 1e-3
-# l2 = 1e-3
-l2 = 1e-4
+lr = 5e-3
+# lr = 1e-3
+l2 = 1e-3
+# l2 = 1e-4
 k = 3
 edge_drop_rate = 0.1
 epoches = 2700
 batch_size = 5000
 
+initializer = tf.random_normal_initializer(stddev=0.01)
 
 virtual_graph = tfg.Graph(
     x=tf.Variable(
-        tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
+        initializer([int(num_users + num_items), int(embedding_size)]),
         name="virtual_embeddings"
     ),
     edge_index=grx.models.LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
@@ -95,17 +96,17 @@ for epoch in range(0, epoches):
 
             losses = pos_losses + neg_losses
 
-            l2_vars = [var for var in tape.watched_variables() if "embedding" in var.name]
+            # l2_vars = [var for var in tape.watched_variables() if "embedding" in var.name]
             # l2_vars.append(model.user_embeddings)
             # l2_vars.append(model.item_embeddings)
-            l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
-            l2_loss = tf.add_n(l2_losses)
+            # l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
+            # l2_loss = tf.add_n(l2_losses)
 
-            # mf_l2_vars = [user_h, item_h]
-            # mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
-            # mf_l2_loss = tf.add_n(mf_l2_losses)
+            mf_l2_vars = [embedded_users, embedded_items, embedded_neg_items]
+            mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
+            mf_l2_loss = tf.add_n(mf_l2_losses) / batch_size
 
-            loss = tf.reduce_sum(losses) + l2_loss * l2
+            loss = tf.reduce_sum(losses) + mf_l2_loss * l2
 
         vars = tape.watched_variables()
         grads = tape.gradient(loss, vars)
