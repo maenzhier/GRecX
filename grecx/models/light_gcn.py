@@ -4,6 +4,7 @@ import tf_geometric as tfg
 import tensorflow as tf
 import numpy as np
 from tf_geometric.nn import gcn_norm_adj
+from tf_geometric.sparse import sparse_diag_matmul, diag_sparse_matmul
 from tf_geometric.utils.graph_utils import convert_edge_to_directed, add_self_loop_edge
 
 
@@ -37,16 +38,21 @@ class LightGCN(tf.keras.Model):
         adj = tfg.SparseAdj(edge_index, shape=[num_nodes, num_nodes])
         adj = adj.add_self_loop()
 
-        deg = tf.math.unsorted_segment_sum(adj.edge_weight, adj.edge_index[0], num_nodes)
-        inv_deg = tf.pow(deg + 1e-8, -1)
-        transition = adj.rmatmul_diag(inv_deg)
+        deg = adj.reduce_sum(axis=-1)
+        deg_inv_sqrt = tf.pow(deg, -0.5)
+        deg_inv_sqrt = tf.where(
+            tf.math.logical_or(tf.math.is_inf(deg_inv_sqrt), tf.math.is_nan(deg_inv_sqrt)),
+            tf.zeros_like(deg_inv_sqrt),
+            deg_inv_sqrt
+        )
 
-        virtual_gcn_normed_user_item_adj = gcn_norm_adj(transition)
+        # (D^(-1/2)A)D^(-1/2)
+        normed_adj = sparse_diag_matmul(diag_sparse_matmul(deg_inv_sqrt, adj), deg_inv_sqrt)
 
         if cache is not None:
-            cache[LightGCN.CACHE_KEY] = virtual_gcn_normed_user_item_adj
+            cache[LightGCN.CACHE_KEY] = normed_adj
 
-        return virtual_gcn_normed_user_item_adj
+        return normed_adj
 
     def build_cache_for_graph(self, graph, override=False):
         """
