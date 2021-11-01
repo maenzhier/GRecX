@@ -19,10 +19,10 @@ from tf_geometric.utils import tf_utils
 # lr = 3e-3
 # l2 = 1e-2
 
-drop_rate = 0.55
+drop_rate = 0.6
 lr = 3e-3
 # l2 = 5e-5
-l2 = 1e-2
+l2 = 3e-2
 
 epoches = 2700
 batch_size = 5000
@@ -104,7 +104,12 @@ for epoch in range(0, epoches):
             l2_vars.append(model.item_embeddings)
             l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
             l2_loss = tf.add_n(l2_losses)
-            loss = tf.reduce_sum(losses) + l2_loss * l2
+
+            mf_l2_vars = [user_h, item_h]
+            mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
+            mf_l2_loss = tf.add_n(mf_l2_losses)
+
+            loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-7 * mf_l2_loss
 
         vars = tape.watched_variables()
         grads = tape.gradient(loss, vars)
