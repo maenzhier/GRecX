@@ -11,16 +11,16 @@ class LightGCN(tf.keras.Model):
 
     CACHE_KEY = "light_gcn_normed_adj"
 
-    def __init__(self, edge_drop_rate, k, *args, **kwargs):
+    def __init__(self, k, edge_drop_rate, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.edge_drop_rate = edge_drop_rate
         self.k = k
+        self.edge_drop_rate = edge_drop_rate
 
     @classmethod
     def build_virtual_edge_index(cls, user_item_edge_index, num_users):
 
-        user_index, item_index = user_item_edge_index.edge_index[0], user_item_edge_index.edge_index[1]
+        user_index, item_index = user_item_edge_index[0], user_item_edge_index[1]
         virtual_item_index = item_index + num_users
         virtual_edge_index = tf.stack([user_index, virtual_item_index], axis=0)
         virtual_edge_index, _ = convert_edge_to_directed(virtual_edge_index, merge_modes="sum")

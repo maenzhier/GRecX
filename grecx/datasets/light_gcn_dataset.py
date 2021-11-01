@@ -12,7 +12,7 @@ import random as rd
 from time import time
 
 
-class Data(object):
+class _LightGCNData(object):
     def __init__(self, path):
         self.path = path
 
@@ -25,6 +25,8 @@ class Data(object):
         self.test_user_items_dict, self.test_user_item_edges = self.read_edge_info(test_file)
 
         self.user_item_edges = np.concatenate([self.train_user_item_edges, self.test_user_item_edges], axis=0)
+        index = np.arange(self.user_item_edges.shape[0])
+        self.train_index, self.test_index = index[:self.train_user_item_edges.shape[0]], index[self.train_user_item_edges.shape[0]:]
         self.num_users, self.num_items = self.user_item_edges.max(axis=0) + 1
 
     def read_edge_info(self, file_path):
@@ -73,34 +75,43 @@ class LightGCNDataset(DownloadableDataset):
         data_dir = os.path.join(self.raw_root_path, "light_gcn_{}".format(name))
         print(data_dir)
 
-        data = Data(path=data_dir)
+        data = _LightGCNData(path=data_dir)
 
         train_user_items_dict, train_user_item_edges = data.train_user_items_dict, data.train_user_item_edges
         test_user_items_dict, test_user_item_edges = data.test_user_items_dict, data.test_user_item_edges
+        train_index, test_index = data.train_index, data.test_index
 
         user_item_edges = data.user_item_edges
         num_users, num_items = data.num_users, data.num_items
 
-        num_negs = 1000
+        # num_negs = 1000
+        #
+        # def build_user_neg_items_dict():
+        #     user_neg_items_dict = {}
+        #     all_items = list(range(num_items))
+        #     for user in tqdm(test_user_items_dict):
+        #         p = np.ones([num_items])
+        #         p[list(train_user_items_dict[user])] = 0.0
+        #         p[list(test_user_items_dict[user])] = 0.0
+        #         p /= p.sum()
+        #         neg_items = np.random.choice(all_items, num_negs, replace=False, p=p)
+        #         user_neg_items_dict[user] = neg_items
+        #     return user_neg_items_dict
+        #
+        # user_neg_items_dict = build_user_neg_items_dict()
 
-        def build_user_neg_items_dict():
-            user_neg_items_dict = {}
-            all_items = list(range(num_items))
-            for user in tqdm(test_user_items_dict):
-                p = np.ones([num_items])
-                p[list(train_user_items_dict[user])] = 0.0
-                p[list(test_user_items_dict[user])] = 0.0
-                p /= p.sum()
-                neg_items = np.random.choice(all_items, num_negs, replace=False, p=p)
-                user_neg_items_dict[user] = neg_items
-            return user_neg_items_dict
-
-        user_neg_items_dict = build_user_neg_items_dict()
-
-        return num_users, num_items, train_user_item_edges, test_user_items_dict, user_neg_items_dict
+        return {
+            "num_users": num_users,
+            "num_items": num_items,
+            "user_item_edges": user_item_edges,
+            "train_index": train_index,
+            "test_index": test_index,
+            "train_user_items_dict": train_user_items_dict,
+            "test_user_items_dict": test_user_items_dict,
+        }
 
 
-class LightGCNYelp(LightGCNDataset):
+class LightGCNYelpDataset(LightGCNDataset):
     def __init__(self, dataset_root_path=None, batch_size=1024, featureless=True):
         super().__init__(
             dataset_name="light_gcn_yelp",
@@ -110,7 +121,7 @@ class LightGCNYelp(LightGCNDataset):
         )
 
 
-class LightGCNGowalla(LightGCNDataset):
+class LightGCNGowallaDataset(LightGCNDataset):
     def __init__(self, dataset_root_path=None, batch_size=1024, featureless=True):
         super().__init__(
             dataset_name="light_gcn_gowalla",
@@ -120,7 +131,7 @@ class LightGCNGowalla(LightGCNDataset):
         )
 
 
-class LightGCNAmazonbook(LightGCNDataset):
+class LightGCNAmazonbookDataset(LightGCNDataset):
     def __init__(self, dataset_root_path=None, batch_size=1024, featureless=True):
         super().__init__(
             dataset_name="light_gcn_amazon-book",

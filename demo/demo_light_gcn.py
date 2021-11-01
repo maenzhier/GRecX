@@ -4,33 +4,45 @@ import tensorflow as tf
 import os
 import numpy as np
 
-from grecx.evaluation.ranking import evaluate_mean_candidate_ndcg_score
+from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
-from grecx.datasets import LightGCNYelp, LightGCNGowalla, LightGCNAmazonbook
+from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
-num_users, num_items, train_user_item_edges, test_user_items_dict, user_neg_items_dict = LightGCNYelp().load_data()
+data_dict = LightGCNYelpDataset().load_data()
+num_users = data_dict["num_users"]
+num_items = data_dict["num_items"]
+user_item_edges = data_dict["user_item_edges"]
+train_index = data_dict["train_index"]
+train_user_items_dict = data_dict["train_user_items_dict"]
+test_user_items_dict = data_dict["test_user_items_dict"]
+
+train_user_item_edges = user_item_edges[train_index]
 train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
-drop_rate = 0.6
-lr = 3e-3
-l2 = 3e-2
-
+# drop_rate = 0.6
+lr = 5e-3
+l2 = 1e-3
+k = 3
+edge_drop_rate = 0.1
 epoches = 2700
 batch_size = 5000
 
 
 virtual_graph = tfg.Graph(
-    x=tf.Variable(tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size))),
+    x=tf.Variable(
+        tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
+        name="virtual_embeddings"
+    ),
     edge_index=grx.models.LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
 )
 
-model = grx.models.LightGCN()
+model = grx.models.LightGCN(k=k, edge_drop_rate=edge_drop_rate)
 model.build_cache_for_graph(virtual_graph)
 
 
@@ -81,17 +93,17 @@ for epoch in range(0, epoches):
 
             losses = pos_losses + neg_losses
 
-            l2_vars = [var for var in tape.watched_variables() if "kernel" in var.name]
+            l2_vars = [var for var in tape.watched_variables() if "embedding" in var.name]
             # l2_vars.append(model.user_embeddings)
             # l2_vars.append(model.item_embeddings)
             l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
             l2_loss = tf.add_n(l2_losses)
 
-            mf_l2_vars = [user_h, item_h]
-            mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
-            mf_l2_loss = tf.add_n(mf_l2_losses)
+            # mf_l2_vars = [user_h, item_h]
+            # mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
+            # mf_l2_loss = tf.add_n(mf_l2_losses)
 
-            loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-7 * mf_l2_loss
+            loss = tf.reduce_sum(losses) + l2_loss * l2
 
         vars = tape.watched_variables()
         grads = tape.gradient(loss, vars)
@@ -101,5 +113,5 @@ for epoch in range(0, epoches):
 
             print("epoch = {}\tstep = {}\tloss = {}".format(epoch, step, loss))
             if step == 0:
-                evaluate_mean_candidate_ndcg_score(test_user_items_dict, user_neg_items_dict, mf_score_func)
-
+                mean_ndcg_dict = evaluate_mean_global_ndcg_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
+                print(mean_ndcg_dict)
