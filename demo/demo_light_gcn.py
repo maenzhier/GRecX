@@ -5,65 +5,48 @@ import os
 import numpy as np
 
 from grecx.evaluation.ranking import evaluate_mean_candidate_ndcg_score
+import grecx as grx
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
-from grecx.config import embedding_size
 from grecx.datasets import LightGCNYelp, LightGCNGowalla, LightGCNAmazonbook
-
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
-# drop_rate = 0.6
-# lr = 3e-3
-# l2 = 1e-2
+num_users, num_items, n_train, n_test = LightGCNAmazonbook().load_data()
 
+
+embedding_size = 64
 drop_rate = 0.6
 lr = 3e-3
-# l2 = 5e-5
 l2 = 3e-2
 
 epoches = 2700
 batch_size = 5000
 
 
-class MF(tf.keras.Model):
-    def __init__(self, num_users, num_items, emb_dim):
-        super().__init__()
-        self.num_users = num_users
-        self.num_items = num_items
-        self.emb_dim = emb_dim
+virtual_graph = tfg.Graph(
+    x=tf.Variable(tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size))),
+    edge_index=grx.models.LightGCN.build_virtual_edge_index(user_item_edge_index, num_users)
+)
 
-        self.user_embeddings = tf.Variable(tf.random.truncated_normal([self.num_users, self.emb_dim], stddev=np.sqrt(1/self.emb_dim)))
-        self.item_embeddings = tf.Variable(tf.random.truncated_normal([self.num_items, self.emb_dim], stddev=np.sqrt(1/self.emb_dim)))
-        self.drop_layer = tf.keras.layers.Dropout(drop_rate)
-
-    def call(self, inputs, training=None, mask=None):
-
-        user_h = self.drop_layer(self.user_embeddings, training=training)
-        # user_h = self.user_embeddings
-
-        item_h = self.drop_layer(self.item_embeddings, training=training)
-        # item_h = self.item_embeddings
-
-        return user_h, item_h
-
-
-num_users, num_items, n_train, n_test = LightGCNAmazonbook().load_data()
-
-model = MF(num_users, num_items, embedding_size)
+model = grx.models.LightGCN()
+model.build_cache_for_graph(virtual_graph)
 
 
 @tf_utils.function
-def forward(training=False):
-    return model([], training=training)
+def forward(virtual_graph, training=False):
+    virtual_h = model([virtual_graph.x, virtual_graph.edge_index], training=training, cache=virtual_graph.cache)
+    embedded_users = virtual_h[:num_users]
+    embedded_items = virtual_h[num_users:]
+    return embedded_users, embedded_items
 
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
 @tf_utils.function
 def mf_score_func(batch_user_indices, batch_item_indices):
-    user_h, item_h = forward(training=False)
+    embedded_users, embedded_items = forward(virtual_graph, training=False)
     embedded_users = tf.gather(user_h, batch_user_indices)
     embedded_items = tf.gather(item_h, batch_item_indices)
     logits = embedded_users @ tf.transpose(embedded_items, [1, 0])

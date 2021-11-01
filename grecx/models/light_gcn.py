@@ -14,7 +14,8 @@ class LightGCN(tf.keras.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def build_virtual_edge_index(self, user_item_edge_index, num_users, num_items):
+    @classmethod
+    def build_virtual_edge_index(cls, user_item_edge_index, num_users):
 
         user_index, item_index = user_item_edge_index.edge_index[0], user_item_edge_index.edge_index[1]
         virtual_item_index = item_index + num_users
@@ -22,7 +23,8 @@ class LightGCN(tf.keras.Model):
         virtual_edge_index, _ = convert_edge_to_directed(virtual_edge_index, merge_modes="sum")
         return virtual_edge_index
 
-    def norm_adj(self, edge_index, num_nodes, cache=None):
+    @classmethod
+    def norm_adj(cls, edge_index, num_nodes, cache=None):
 
         if cache is not None:
             cached_data = cache.get(LightGCN.CACHE_KEY, None)
@@ -42,6 +44,19 @@ class LightGCN(tf.keras.Model):
             cache[LightGCN.CACHE_KEY] = virtual_gcn_normed_user_item_adj
 
         return virtual_gcn_normed_user_item_adj
+
+    def build_cache_for_graph(self, graph, override=False):
+        """
+        Manually compute the normed edge based on this layer's GCN normalization configuration (self.renorm and self.improved) and put it in graph.cache.
+        If the normed edge already exists in graph.cache and the override parameter is False, this method will do nothing.
+        :param graph: tfg.Graph, the input graph.
+        :param override: Whether to override existing cached normed edge.
+        :return: None
+        """
+        if override:
+            graph.cache[LightGCN.CACHE_KEY] = None
+        LightGCN.norm_adj(graph.edge_index, graph.num_nodes, cache=graph.cache)
+
 
     def call(self, inputs, training=None, mask=None, cache=None):
 
