@@ -36,7 +36,6 @@ class LightGCN(tf.keras.Model):
                 return cached_data
 
         adj = tfg.SparseAdj(edge_index, shape=[num_nodes, num_nodes])
-        adj = adj.add_self_loop()
 
         deg = adj.reduce_sum(axis=-1)
         deg_inv_sqrt = tf.pow(deg, -0.5)
