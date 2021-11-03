@@ -26,20 +26,21 @@ train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
 # drop_rate = 0.6
-lr = 5e-3
-# lr = 1e-3
-l2 = 1e-3
-# l2 = 1e-4
+# lr = 5e-3
+lr = 1e-3
+# l2 = 1e-3
+l2 = 1e-4
 k = 3
 edge_drop_rate = 0.1
 epoches = 2700
 batch_size = 5000
 
-initializer = tf.random_normal_initializer(stddev=0.01)
+# initializer = tf.random_normal_initializer(stddev=0.01)
 
 virtual_graph = tfg.Graph(
     x=tf.Variable(
-        initializer([int(num_users + num_items), int(embedding_size)]),
+        # initializer([int(num_users + num_items), int(embedding_size)]),
+        tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
         name="virtual_embeddings"
     ),
     edge_index=grx.models.LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
@@ -85,16 +86,19 @@ for epoch in range(0, epoches):
             pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
             neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
 
-            pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=pos_logits,
-                labels=tf.ones_like(pos_logits)
-            )
-            neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=neg_logits,
-                labels=tf.zeros_like(neg_logits)
-            )
+            # pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+            #     logits=pos_logits,
+            #     labels=tf.ones_like(pos_logits)
+            # )
+            # neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+            #     logits=neg_logits,
+            #     labels=tf.zeros_like(neg_logits)
+            # )
+            #
+            # losses = pos_losses + neg_losses
 
-            losses = pos_losses + neg_losses
+            # losses = tf.reduce_mean(tf.nn.softplus(-(pos_logits - neg_logits)))
+            losses = tf.reduce_sum(tf.nn.softplus(-(pos_logits - neg_logits)))
 
             # l2_vars = [var for var in tape.watched_variables() if "embedding" in var.name]
             # l2_vars.append(model.user_embeddings)
@@ -104,7 +108,8 @@ for epoch in range(0, epoches):
 
             mf_l2_vars = [embedded_users, embedded_items, embedded_neg_items]
             mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
-            mf_l2_loss = tf.add_n(mf_l2_losses) / batch_size
+            mf_l2_loss = tf.add_n(mf_l2_losses)/batch_size
+            # mf_l2_loss = tf.add_n(mf_l2_losses)
 
             loss = tf.reduce_sum(losses) + mf_l2_loss * l2
 
