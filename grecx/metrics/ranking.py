@@ -3,6 +3,7 @@
 import numpy as np
 
 
+
 def dcg_score(element_list):
     """
     Discounted Cumulative Gain (DCG)
@@ -17,11 +18,12 @@ def dcg_score(element_list):
         score
     """
     score = 0.0
-    for order, rank in enumerate(element_list):
-        # print(rank)
-        if rank > 0:
-            # score += math.log(2) / math.log((order+2))
-            score += np.log(2) / np.log(order + 2)
+    for order, rel in enumerate(element_list):
+        score += (np.power(2.0, rel) - 1.0) / np.log(order + 2)
+        # if rel > 0:
+        #     print("====")
+        #     # score += math.log(2) / math.log((order+2))
+        #     score += np.log(2) / np.log(order + 2)
     return score
 
 
@@ -40,3 +42,5 @@ def ndcg_score(reference, hypothesis):
     """
 
     return dcg_score(hypothesis)/dcg_score(reference)
+
+
