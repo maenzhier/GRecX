@@ -29,7 +29,7 @@ train_user_item_edges = np.random.permutation(train_user_item_edges)
 
 
 embedding_size = 64
-lr = 2e-3
+lr = 3e-3
 l2 = 1e-4
 k = 3
 edge_drop_rate = 0.1
