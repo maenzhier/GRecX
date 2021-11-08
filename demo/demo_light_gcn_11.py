@@ -7,14 +7,13 @@ import numpy as np
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
-# data_dict = LightGCNYelpDataset().load_data()
-data_dict = LightGCNGowallaDataset().load_data()
+data_dict = LightGCNYelpDataset().load_data()
 num_users = data_dict["num_users"]
 num_items = data_dict["num_items"]
 user_item_edges = data_dict["user_item_edges"]
@@ -87,18 +86,18 @@ for epoch in range(0, epoches):
             pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
             neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
 
-            # pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-            #     logits=pos_logits,
-            #     labels=tf.ones_like(pos_logits)
-            # )
-            # neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-            #     logits=neg_logits,
-            #     labels=tf.zeros_like(neg_logits)
-            # )
-            #
-            # losses = pos_losses + neg_losses
+            pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=pos_logits,
+                labels=tf.ones_like(pos_logits)
+            )
+            neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=neg_logits,
+                labels=tf.zeros_like(neg_logits)
+            )
 
-            losses = tf.reduce_sum(tf.nn.softplus(-(pos_logits - neg_logits)))
+            losses = pos_losses + neg_losses
+
+            # losses = tf.reduce_sum(tf.nn.softplus(-(pos_logits - neg_logits)))
             # logits = 0.6 - pos_logits + neg_logits
             # logits = tf.where(tf.greater(logits, 0.0), logits, tf.zeros_like(logits))
             # losses = tf.reduce_sum(tf.nn.softplus(logits))

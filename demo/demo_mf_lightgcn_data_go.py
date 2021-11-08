@@ -4,25 +4,28 @@ import tensorflow as tf
 import os
 import numpy as np
 
-from grecx.evaluation.ranking import evaluate_mean_candidate_ndcg_score
+from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 from grecx.config import embedding_size
-from grecx.datasets import DiffNetYelp, DiffNetFlickr
-# from grecx.evaluation import evaluate_mean_candidate_ndcg_score
-
+from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
-# drop_rate = 0.6
-# lr = 3e-3
-# l2 = 3e-2
+data_dict = LightGCNGowallaDataset().load_data()
+num_users = data_dict["num_users"]
+num_items = data_dict["num_items"]
+user_item_edges = data_dict["user_item_edges"]
+train_index = data_dict["train_index"]
+train_user_item_edges = user_item_edges[train_index]
+train_user_items_dict = data_dict["train_user_items_dict"]
+test_user_items_dict = data_dict["test_user_items_dict"]
 
-drop_rate = 0.6
-lr = 3e-3
-# l2 = 5e-5
-l2 = 3e-2
+
+drop_rate = 0.3
+lr = 2e-3
+l2 = 1e-4
 
 epoches = 2700
 batch_size = 5000
@@ -49,9 +52,6 @@ class MF(tf.keras.Model):
 
         return user_h, item_h
 
-
-# num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetYelp().load_data()
-# num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetFlickr().load_data()
 
 model = MF(num_users, num_items, embedding_size)
 
@@ -87,17 +87,24 @@ for epoch in range(0, epoches):
 
             pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
             neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
+            #
+            # pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+            #     logits=pos_logits,
+            #     labels=tf.ones_like(pos_logits)
+            # )
+            # neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+            #     logits=neg_logits,
+            #     labels=tf.zeros_like(neg_logits)
+            # )
+            #
+            # losses = pos_losses + neg_losses
+            # losses = tf.reduce_sum(tf.nn.softplus(-(pos_logits - neg_logits)))
 
-            pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=pos_logits,
-                labels=tf.ones_like(pos_logits)
+            logits = tf.stack([pos_logits, neg_logits], axis=1)
+            losses = tf.nn.softmax_cross_entropy_with_logits(
+                logits=logits,
+                labels=tf.one_hot(tf.zeros([tf.shape(logits)[0]], dtype=tf.int32), depth=2)
             )
-            neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=neg_logits,
-                labels=tf.zeros_like(neg_logits)
-            )
-
-            losses = pos_losses + neg_losses
 
             l2_vars = [var for var in tape.watched_variables() if "kernel" in var.name]
             l2_vars.append(model.user_embeddings)
@@ -105,12 +112,12 @@ for epoch in range(0, epoches):
             l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
             l2_loss = tf.add_n(l2_losses)
 
-            mf_l2_vars = [user_h, item_h]
-            mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
-            mf_l2_loss = tf.add_n(mf_l2_losses)
+            # mf_l2_vars = [user_h, item_h]
+            # mf_l2_losses = [tf.nn.l2_loss(var) for var in mf_l2_vars]
+            # mf_l2_loss = tf.add_n(mf_l2_losses)
 
             # loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-7 * mf_l2_loss
-            loss = tf.reduce_sum(losses) + l2_loss * l2 + 1e-8 * mf_l2_loss
+            loss = tf.reduce_sum(losses) + l2_loss * l2
 
         vars = tape.watched_variables()
         grads = tape.gradient(loss, vars)
@@ -118,7 +125,10 @@ for epoch in range(0, epoches):
 
         if epoch % 20 == 0 and step % 1000 == 0:
 
-            print("epoch = {}\tstep = {}\tloss = {}".format(epoch, step, loss))
-            if step == 0:
-                evaluate_mean_candidate_ndcg_score(test_user_items_dict, user_neg_items_dict, mf_score_func)
+            mean_ndcg_dict = evaluate_mean_global_ndcg_score(
+                test_user_items_dict, train_user_items_dict, num_items, mf_score_func,
+                # user_batch_size=4000,
+                # item_batch_size=8000
+            )
+            print("epoch = {}\tresults = {}".format(epoch, mean_ndcg_dict))
 
