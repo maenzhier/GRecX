@@ -2,9 +2,7 @@
 
 import tf_geometric as tfg
 import tensorflow as tf
-import numpy as np
-from tf_geometric.nn import gcn_norm_adj
-from tf_geometric.sparse import sparse_diag_matmul, diag_sparse_matmul
+from tf_sparse import sparse_diag_matmul, diag_sparse_matmul
 from tf_geometric.utils.graph_utils import convert_edge_to_directed, add_self_loop_edge
 
 
@@ -37,7 +35,7 @@ class LightGCN(tf.keras.Model):
 
         adj = tfg.SparseAdj(edge_index, shape=[num_nodes, num_nodes])
 
-        deg = adj.reduce_sum(axis=-1)
+        deg = adj.segment_sum(axis=-1)
         deg_inv_sqrt = tf.pow(deg, -0.5)
         deg_inv_sqrt = tf.where(
             tf.math.logical_or(tf.math.is_inf(deg_inv_sqrt), tf.math.is_nan(deg_inv_sqrt)),

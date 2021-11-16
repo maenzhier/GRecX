@@ -8,7 +8,7 @@ from tqdm import tqdm
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
@@ -29,12 +29,13 @@ train_user_item_edges = np.random.permutation(train_user_item_edges)
 
 
 embedding_size = 64
-lr = 3e-3
+lr = 2e-3
+# l2 = 1e-4
 l2 = 1e-4
 k = 3
 edge_drop_rate = 0.1
 epoches = 10000
-batch_size = 8000
+batch_size = 4000
 
 
 virtual_graph = tfg.Graph(
