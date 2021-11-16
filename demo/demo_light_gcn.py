@@ -8,7 +8,7 @@ from tqdm import tqdm
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
