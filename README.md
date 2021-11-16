@@ -29,7 +29,15 @@ A Fair Benchmark for GNN-based Recommendation
 
 | Algo | nDCG@20 | recall@20 | precision@20 |
 | --- | --- | --- | --- | 
+| NGCF | 0.04118 | 0.02302 | 0.05034 |
 | lightGCN| 0.05260 | 0.06397 | 0.02876 |
+
+
+| Algo | nDCG@20 | recall@20 | precision@20 |
+| --- | --- | --- | --- | 
+| （original code） UltraGCN (negative_num=1) (negative_weight=1)| 0.03408 | 0.04154 | 0.01928 |
+| ours-UltraGCN | 0.03540 |  |  |
+
 
 * MF-loss
 
@@ -62,8 +70,14 @@ A Fair Benchmark for GNN-based Recommendation
 
 | Algo | nDCG@20 | recall@20 | precision@20 |
 | --- | --- | --- | --- | 
+| NGCF | 0.11804 | 0.14375 | 0.04404 |
 | lightGCN| 0.15271 | 0.17801 | 0.05474 |
 
+
+| Algo | nDCG@20 | recall@20 | precision@20 |
+| --- | --- | --- | --- | 
+| （original code） UltraGCN (negative_num=1) (negative_weight=1)| 0.10846 | 0.12202 | 0.03826 |
+| ours-UltraGCN | |  |  |
 
 * MF-loss
 
