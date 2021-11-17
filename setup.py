@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="grecx",
     python_requires='>3.5.0',
-    version="0.0.1",
+    version="0.0.2-dev",
     author="Desheng Cai",
     author_email="caidsml@gmail.com",
     packages=find_packages(
@@ -20,7 +20,7 @@ setup(
         ]
     ),
     install_requires=[
-        "tf_geometric"
+        "tf_geometric >= 0.0.73"
     ],
     extras_require={
 
