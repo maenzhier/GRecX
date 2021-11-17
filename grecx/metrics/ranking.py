@@ -44,3 +44,13 @@ def ndcg_score(reference, hypothesis):
     return dcg_score(hypothesis)/dcg_score(reference)
 
 
+def precision(ground_truth, rank):
+    hits = [1 if item in ground_truth else 0 for item in rank]
+    result = np.cumsum(hits, dtype=np.float)/np.arange(1, len(rank)+1)
+    return result
+
+
+def recall(ground_truth, rank):
+    hits = [1 if item in ground_truth else 0 for item in rank]
+    result = np.cumsum(hits, dtype=np.float) / len(ground_truth)
+    return result

@@ -5,12 +5,12 @@ from tqdm import tqdm
 import tensorflow as tf
 import numpy as np
 
-from grecx.metrics.ranking import ndcg_score
+from grecx.metrics.ranking import ndcg_score, precision, recall
 
 
 def evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_items,
                                     ranking_score_func,
-                                    k_list=[5, 10, 15, 20], user_batch_size=1000, item_batch_size=5000):
+                                    k_list=[20], user_batch_size=1000, item_batch_size=5000):
 
 
     results = []
@@ -70,7 +70,7 @@ def evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_i
 
 def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
                                     ranking_score_func,
-                                    k_list=[5, 10, 15, 20], user_batch_size=1000, item_batch_size=5000, num_items=None):
+                                    k_list=[20], user_batch_size=1000, item_batch_size=5000, num_items=None):
 
     if num_items is None:
         num_items = 0
