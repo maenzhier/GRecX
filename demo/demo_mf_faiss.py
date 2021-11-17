@@ -3,9 +3,10 @@
 import tensorflow as tf
 import os
 import numpy as np
+from itertools import chain
 
 from grecx.evaluation.ranking import evaluate_mean_candidate_ndcg_score
-
+from grecx.evaluation.ranking_faiss import evaluate_mean_candidate_ndcg_score_with_faiss
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from grecx.config import embedding_size
@@ -51,7 +52,7 @@ class MF(tf.keras.Model):
 
 
 num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetYelp().load_data()
-# num_users, num_items, train_user_item_edges, test_user_items_dict, user_user_edges, user_neg_items_dict = DiffNetFlickr().load_data()
+# num_users, num_items, train_user_item_edges, test_use`r_items_dict, user_user_edges, user_neg_items_dict = DiffNetFlickr().load_data()
 
 model = MF(num_users, num_items, embedding_size)
 
@@ -70,6 +71,12 @@ def mf_score_func(batch_user_indices, batch_item_indices):
     logits = embedded_users @ tf.transpose(embedded_items, [1, 0])
     return logits
 
+@tf_utils.function
+def embed_user_and_items(user_indices, item_indices):
+    user_h, item_h = forward(training=False)
+    embedded_users = tf.gather(user_h, user_indices)
+    embedded_items = tf.gather(item_h, item_indices)
+    return embedded_users, embedded_items
 
 for epoch in range(0, epoches):
     print("epoch: ", epoch)
@@ -120,5 +127,15 @@ for epoch in range(0, epoches):
 
             print("epoch = {}\tstep = {}\tloss = {}".format(epoch, step, loss))
             if step == 0:
-                mean_ndcg_score = evaluate_mean_candidate_ndcg_score(test_user_items_dict, user_neg_items_dict, mf_score_func)
-                print(mean_ndcg_score)
+                import time
+                start = time.time()
+                user_h, item_h = forward(training=False)
+                mean_ndcg_dict_faiss = evaluate_mean_candidate_ndcg_score_with_faiss(test_user_items_dict, user_neg_items_dict,
+                                                               user_h, item_h)
+                mid = time.time()
+                mean_ndcg_dict = evaluate_mean_candidate_ndcg_score(test_user_items_dict, user_neg_items_dict, mf_score_func)
+                end = time.time()
+                print("use faiss: {}".format(mid - start))
+                print("no faiss: {}".format(end - mid))
+                print(mean_ndcg_dict_faiss)
+                print(mean_ndcg_dict)

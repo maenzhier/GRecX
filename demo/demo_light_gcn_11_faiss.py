@@ -3,11 +3,11 @@
 import tensorflow as tf
 import os
 import numpy as np
-
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
+from grecx.evaluation.ranking_faiss import evaluate_mean_global_ndcg_score_with_faiss
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
@@ -40,7 +40,7 @@ batch_size = 5000
 virtual_graph = tfg.Graph(
     x=tf.Variable(
         # initializer([int(num_users + num_items), int(embedding_size)]),
-        tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
+        tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1 / np.sqrt(embedding_size)),
         name="virtual_embeddings"
     ),
     edge_index=grx.models.LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
@@ -60,18 +60,19 @@ def forward(virtual_graph, training=False):
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
-@tf_utils.function
-def mf_score_func(batch_user_indices, batch_item_indices):
-    user_h, item_h = forward(virtual_graph, training=False)
-    embedded_users = tf.gather(user_h, batch_user_indices)
-    embedded_items = tf.gather(item_h, batch_item_indices)
-    logits = embedded_users @ tf.transpose(embedded_items, [1, 0])
-    return logits
+# @tf_utils.function
+# def mf_score_func(batch_user_indices, batch_item_indices):
+#     user_h, item_h = forward(virtual_graph, training=False)
+#     embedded_users = tf.gather(user_h, batch_user_indices)
+#     embedded_items = tf.gather(item_h, batch_item_indices)
+#     logits = embedded_users @ tf.transpose(embedded_items, [1, 0])
+#     return logits
 
 
 for epoch in range(0, epoches):
     print("epoch: ", epoch)
-    for step, batch_edges in enumerate(tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
+    for step, batch_edges in enumerate(
+            tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
         batch_user_indices = batch_edges[:, 0]
         batch_item_indices = batch_edges[:, 1]
         batch_neg_item_indices = np.random.randint(0, num_items, batch_item_indices.shape)
@@ -124,5 +125,7 @@ for epoch in range(0, epoches):
 
             print("epoch = {}\tstep = {}\tloss = {}".format(epoch, step, loss))
             if step == 0:
-                mean_ndcg_dict = evaluate_mean_global_ndcg_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
+                user_h, item_h = forward(virtual_graph, training=False)
+                mean_ndcg_dict = evaluate_mean_global_ndcg_score_with_faiss(test_user_items_dict,
+                                                                            train_user_items_dict, user_h, item_h)
                 print(mean_ndcg_dict)

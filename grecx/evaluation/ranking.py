@@ -12,7 +12,6 @@ def evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_i
                                     ranking_score_func,
                                     k_list=[5, 10, 15, 20], user_batch_size=1000, item_batch_size=5000):
 
-
     results = []
     test_users = list(user_items_dict.keys())
     for batch_user_indices in tqdm(tf.data.Dataset.from_tensor_slices(test_users).batch(user_batch_size)):
@@ -40,9 +39,6 @@ def evaluate_mean_global_ndcg_score(user_items_dict, user_mask_items_dict, num_i
             pred_items = np.argsort(user_rank_scores)[::-1][:k_list[-1] + len(mask_items)]
 
             pred_items = [item for item in pred_items if item not in mask_items][:k_list[-1]]
-
-
-            # pred_items = candidate_items[candidate_rank]
 
             pred_match = [1.0 if item in items else 0.0 for item in pred_items]
 
@@ -73,12 +69,7 @@ def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
                                     k_list=[5, 10, 15, 20], user_batch_size=1000, item_batch_size=5000, num_items=None):
 
     if num_items is None:
-        num_items = 0
-        for items in tqdm(chain(user_items_dict.values(), user_neg_items_dict.values())):
-            for item in items:
-                if item + 1 > num_items:
-                    num_items = item + 1
-
+        num_items = max(max(items) for items in tqdm(chain(user_items_dict.values(), user_neg_items_dict.values())))+1
         print(num_items)
 
     results = []
