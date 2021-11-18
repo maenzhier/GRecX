@@ -5,16 +5,24 @@ import os
 import numpy as np
 
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
+from grecx.evaluation.ranking import evaluate_mean_global_all_score
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
+
+#lr = 1e-3
+# l2 = 1e-4
 # data_dict = LightGCNYelpDataset().load_data()
-data_dict = LightGCNGowallaDataset().load_data()
+
+# data_dict = LightGCNGowallaDataset().load_data()
+
+
+data_dict = LightGCNAmazonbookDataset().load_data()
 num_users = data_dict["num_users"]
 num_items = data_dict["num_items"]
 user_item_edges = data_dict["user_item_edges"]
@@ -27,9 +35,7 @@ train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
 # drop_rate = 0.6
-# lr = 5e-3
 lr = 1e-3
-# l2 = 1e-3
 l2 = 1e-4
 k = 3
 edge_drop_rate = 0.15
@@ -123,7 +129,14 @@ for epoch in range(0, epoches):
 
         if epoch % 20 == 0 and step % 1000 == 0:
 
+            if optimizer.learning_rate.numpy() > 1e-4:
+                optimizer.learning_rate.assign(optimizer.learning_rate * 0.975)
+                print("update lr: ", optimizer.learning_rate)
+            else:
+                print("current lr: ", optimizer.learning_rate)
+
             print("epoch = {}\tstep = {}\tloss = {}".format(epoch, step, loss))
             if step == 0:
-                mean_ndcg_dict = evaluate_mean_global_ndcg_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
+                # mean_ndcg_dict, mean_pre_dict, mean_recall_dict = evaluate_mean_global_all_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
+                mean_ndcg_dict= evaluate_mean_global_ndcg_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
                 print(mean_ndcg_dict)

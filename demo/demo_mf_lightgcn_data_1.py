@@ -6,14 +6,21 @@ import numpy as np
 
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 from grecx.config import embedding_size
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
-data_dict = LightGCNYelpDataset().load_data()
+
+# drop_rate = 0.3
+# lr = 2e-3
+# l2 = 1e-4
+# data_dict = LightGCNYelpDataset().load_data()
+
+
+data_dict = LightGCNGowallaDataset().load_data()
 num_users = data_dict["num_users"]
 num_items = data_dict["num_items"]
 user_item_edges = data_dict["user_item_edges"]
@@ -88,23 +95,23 @@ for epoch in range(0, epoches):
             pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
             neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
             #
-            # pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-            #     logits=pos_logits,
-            #     labels=tf.ones_like(pos_logits)
-            # )
-            # neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-            #     logits=neg_logits,
-            #     labels=tf.zeros_like(neg_logits)
-            # )
-            #
-            # losses = pos_losses + neg_losses
+            pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=pos_logits,
+                labels=tf.ones_like(pos_logits)
+            )
+            neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=neg_logits,
+                labels=tf.zeros_like(neg_logits)
+            )
+
+            losses = pos_losses + neg_losses
             # losses = tf.reduce_sum(tf.nn.softplus(-(pos_logits - neg_logits)))
 
-            logits = tf.stack([pos_logits, neg_logits], axis=1)
-            losses = tf.nn.softmax_cross_entropy_with_logits(
-                logits=logits,
-                labels=tf.one_hot(tf.zeros([tf.shape(logits)[0]], dtype=tf.int32), depth=2)
-            )
+            # logits = tf.stack([pos_logits, neg_logits], axis=1)
+            # losses = tf.nn.softmax_cross_entropy_with_logits(
+            #     logits=logits,
+            #     labels=tf.one_hot(tf.zeros([tf.shape(logits)[0]], dtype=tf.int32), depth=2)
+            # )
 
             l2_vars = [var for var in tape.watched_variables() if "kernel" in var.name]
             l2_vars.append(model.user_embeddings)
@@ -124,6 +131,12 @@ for epoch in range(0, epoches):
         optimizer.apply_gradients(zip(grads, vars))
 
         if epoch % 20 == 0 and step % 1000 == 0:
+
+            if optimizer.learning_rate.numpy() > 1e-4:
+                optimizer.learning_rate.assign(optimizer.learning_rate * 0.975)
+                print("update lr: ", optimizer.learning_rate)
+            else:
+                print("current lr: ", optimizer.learning_rate)
 
             mean_ndcg_dict = evaluate_mean_global_ndcg_score(
                 test_user_items_dict, train_user_items_dict, num_items, mf_score_func,
