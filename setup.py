@@ -32,9 +32,7 @@ setup(
     extras_require={
 
     },
-    description="""
-        A Fair Benchmark for GNN-based Recommendation.
-    """,
+    description="A Fair Benchmark for GNN-based Recommendation.",
     license="GNU General Public License v3.0 (See LICENSE)",
     long_description=open("README.rst", "r", encoding="utf-8").read(),
     url="https://github.com/maenzhier/GRecX"
