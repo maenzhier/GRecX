@@ -5,16 +5,24 @@ import os
 import numpy as np
 
 from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
+from grecx.evaluation.ranking_faiss import evaluate_mean_global_ndcg_score_with_faiss
 import grecx as grx
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
+
+#lr = 1e-3
+# l2 = 1e-4
 # data_dict = LightGCNYelpDataset().load_data()
+
 data_dict = LightGCNGowallaDataset().load_data()
+
+
+# data_dict = LightGCNAmazonbookDataset().load_data()
 num_users = data_dict["num_users"]
 num_items = data_dict["num_items"]
 user_item_edges = data_dict["user_item_edges"]
@@ -27,10 +35,12 @@ train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
 # drop_rate = 0.6
-lr = 5e-3
-# lr = 1e-2
-# l2 = 1e-3
-l2 = 1e-5
+lr = 1e-2
+# l2 = 1e-4 'ndcg@20': 0.1481
+# l2 = 5e-5 0.146
+# l2 = 2e-4 0.1475
+# l2 = 9e-5 'ndcg@20': 0.1485
+l2 = 2e-4
 k = 3
 edge_drop_rate = 0.15
 epoches = 2700
@@ -71,7 +81,7 @@ def mf_score_func(batch_user_indices, batch_item_indices):
 
 
 @tf_utils.function
-def train_step(batch_user_indices,batch_item_indices):
+def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
     with tf.GradientTape() as tape:
         user_h, item_h = forward(virtual_graph, training=True)
 
@@ -82,18 +92,18 @@ def train_step(batch_user_indices,batch_item_indices):
         pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
         neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
 
-        pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-            logits=pos_logits,
-            labels=tf.ones_like(pos_logits)
-        )
-        neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
-            logits=neg_logits,
-            labels=tf.zeros_like(neg_logits)
-        )
+        # pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+        #     logits=pos_logits,
+        #     labels=tf.ones_like(pos_logits)
+        # )
+        # neg_losses = tf.nn.sigmoid_cross_entropy_with_logits(
+        #     logits=neg_logits,
+        #     labels=tf.zeros_like(neg_logits)
+        # )
+        #
+        # mf_losses = pos_losses + neg_losses
 
-        mf_losses = pos_losses + neg_losses
-
-        # losses = tf.reduce_sum(tf.nn.softplus(-(pos_logits - neg_logits)))
+        mf_losses = tf.nn.softplus(-(pos_logits - neg_logits))
         # logits = 0.6 - pos_logits + neg_logits
         # logits = tf.where(tf.greater(logits, 0.0), logits, tf.zeros_like(logits))
         # losses = tf.reduce_sum(tf.nn.softplus(logits))
@@ -121,12 +131,13 @@ def train_step(batch_user_indices,batch_item_indices):
 
 for epoch in range(0, epoches):
     if epoch % 20 == 0:
-
+        user_h, item_h = forward(virtual_graph, training=False)
         print("epoch = {}".format(epoch))
-        mean_ndcg_dict = evaluate_mean_global_ndcg_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
-        print(mean_ndcg_dict)
-
-    print("epoch: ", epoch)
+        mean_ndcg_dict_faiss = evaluate_mean_global_ndcg_score_with_faiss(test_user_items_dict, train_user_items_dict,
+                                                                          user_h, item_h)
+        print(mean_ndcg_dict_faiss)
+        # mean_ndcg_dict = evaluate_mean_global_ndcg_score(test_user_items_dict, train_user_items_dict, num_items, mf_score_func)
+        # print(mean_ndcg_dict)
 
 
     step_losses = []
@@ -138,7 +149,7 @@ for epoch in range(0, epoches):
         batch_item_indices = batch_edges[:, 1]
         batch_neg_item_indices = np.random.randint(0, num_items, batch_item_indices.shape)
 
-        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices)
+        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices)
 
         step_losses.append(loss.numpy())
         step_mf_losses_list.append(mf_losses.numpy())
@@ -148,10 +159,8 @@ for epoch in range(0, epoches):
         epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
         np.mean(step_l2_losses)))
 
-    if optimizer.learning_rate.numpy() > 5e-4:
+    if optimizer.learning_rate.numpy() > 1e-5:
         optimizer.learning_rate.assign(optimizer.learning_rate * 0.995)
         print("update lr: ", optimizer.learning_rate)
     else:
         print("current lr: ", optimizer.learning_rate)
-
-
