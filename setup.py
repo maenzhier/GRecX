@@ -20,7 +20,14 @@ setup(
         ]
     ),
     install_requires=[
-        "tf_geometric >= 0.0.73"
+        "tf_geometric >= 0.0.73",
+        "tf_sparse >= 0.0.8",
+        "numpy >= 1.17.4",
+        "tensorflow == 2.4.1",
+        "scikit-learn >= 0.22",
+        "tqdm",
+        "Sphinx == 3.5.4",
+        "faiss-cpu"
     ],
     extras_require={
 
