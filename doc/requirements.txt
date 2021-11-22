@@ -4,5 +4,5 @@ tensorflow == 2.4.1
 scikit-learn >= 0.22
 tqdm
 Sphinx == 3.5.4
-tf_geometric >= 0.0.74
+tf_geometric >= 0.0.75
 faiss-cpu
