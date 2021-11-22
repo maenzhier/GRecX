@@ -140,6 +140,6 @@ demo/data/
 demo/myModel/
 demo/tmp/
 demo/demo-backs
-demo/demo-backs-1
 **/test.py
 demo/demo_mf_faiss.py
+/demo/demo-backs-1/
