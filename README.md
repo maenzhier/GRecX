@@ -8,7 +8,7 @@ A Fair Benchmark for GNN-based Recommendation
 ### Homepage and Documentation
 
 + Homepage: []()
-+ Documentation: []() ([中文版]())
++ Documentation: []()
 + Paper: [GRecX: An Efficient and Unified Benchmark for GNN-based Recommendation](https://arxiv.org/pdf/2111.10342.pdf)
 
 
@@ -80,6 +80,9 @@ A Fair Benchmark for GNN-based Recommendation
 
 #### LightGCN-Amazon-book dataset (featureless)
 
+| Algo | nDCG@20 |
+| --- | --- | 
+| lightGCN| --- |
 
 
 
