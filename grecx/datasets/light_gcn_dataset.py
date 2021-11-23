@@ -57,7 +57,19 @@ class _LightGCNData(object):
 
 
 class LightGCNDataset(DownloadableDataset):
+
+    """
+    Datasets used in the LightGCN model: https://github.com/maenzhier/grecx_datasets
+    """
+
     def __init__(self, dataset_name, featureless=True, download_urls=None, dataset_root_path=None):
+        """
+
+        :param dataset_name: "light_gcn_yelp" | "light_gcn_gowalla" | "light_gcn_amazon-book"
+        :param featureless:
+        :param download_urls:
+        :param dataset_root_path:
+        """
         super().__init__(dataset_name, download_urls,
                          download_file_name="{}.zip".format(dataset_name),
                          cache_name="cache.p",
@@ -112,6 +124,11 @@ class LightGCNDataset(DownloadableDataset):
 
 
 class LightGCNYelpDataset(LightGCNDataset):
+
+    """
+    The Yelp dataset used in the LightGCN model: https://github.com/maenzhier/grecx_datasets/tree/main/yelp
+    """
+
     def __init__(self, dataset_root_path=None, batch_size=1024, featureless=True):
         super().__init__(
             dataset_name="light_gcn_yelp",
@@ -122,6 +139,11 @@ class LightGCNYelpDataset(LightGCNDataset):
 
 
 class LightGCNGowallaDataset(LightGCNDataset):
+
+    """
+    The Gowalla dataset used in the LightGCN model: https://github.com/maenzhier/grecx_datasets/tree/main/gowalla
+    """
+
     def __init__(self, dataset_root_path=None, batch_size=1024, featureless=True):
         super().__init__(
             dataset_name="light_gcn_gowalla",
@@ -132,6 +154,11 @@ class LightGCNGowallaDataset(LightGCNDataset):
 
 
 class LightGCNAmazonbookDataset(LightGCNDataset):
+
+    """
+    The Amazonbook dataset used in the LightGCN model: https://github.com/maenzhier/grecx_datasets/tree/main/amazon-book
+    """
+
     def __init__(self, dataset_root_path=None, batch_size=1024, featureless=True):
         super().__init__(
             dataset_name="light_gcn_amazon-book",

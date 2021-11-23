@@ -16,8 +16,8 @@ from tf_geometric.utils import tf_utils
 
 #lr = 1e-3
 # l2 = 1e-4
-# data_dict = LightGCNYelpDataset().load_data()
-data_dict = LightGCNGowallaDataset().load_data()
+data_dict = LightGCNYelpDataset().load_data()
+# data_dict = LightGCNGowallaDataset().load_data()
 # data_dict = LightGCNAmazonbookDataset().load_data()
 
 num_users = data_dict["num_users"]

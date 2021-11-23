@@ -10,7 +10,19 @@ from tqdm import tqdm
 
 
 class DiffNetDataset(DownloadableDataset):
+
+    """
+    Datasets used in the DiffNet model: https://github.com/maenzhier/grecx_datasets
+    """
+
     def __init__(self, dataset_name, featureless=True, download_urls=None, dataset_root_path=None):
+        """
+
+        :param dataset_name: "diff_net_yelp" | "diff_net_flickr"
+        :param featureless:
+        :param download_urls:
+        :param dataset_root_path:
+        """
         super().__init__(dataset_name, download_urls,
                          download_file_name="{}.zip".format(dataset_name),
                          cache_name="cache.p",
@@ -82,6 +94,11 @@ class DiffNetDataset(DownloadableDataset):
 
 
 class DiffNetYelp(DiffNetDataset):
+
+    """
+    The Yelp dataset used in the DiffNet model: https://github.com/maenzhier/grecx_datasets/tree/main/yelp
+    """
+
     def __init__(self, dataset_root_path=None, featureless=True):
         super().__init__(
             dataset_name="DiffNetYelp",
@@ -92,6 +109,9 @@ class DiffNetYelp(DiffNetDataset):
 
 
 class DiffNetFlickr(DiffNetDataset):
+    """
+    The Flickr dataset used in the DiffNet model: https://github.com/maenzhier/grecx_datasets/tree/main/yelp
+    """
     def __init__(self, dataset_root_path=None, featureless=True):
         super().__init__(
             dataset_name="diff_net_flickr",
