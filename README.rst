@@ -10,7 +10,7 @@
 GRecX
 =====
 
-A Fair Benchmark for GNN-based Recommendation
+An Efficient and Unified Benchmark for GNN-based Recommendation.
 
 Preliminary Comparison
 ^^^^^^^^^^^^^^^^^^^^^^

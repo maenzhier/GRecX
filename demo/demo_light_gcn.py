@@ -1,19 +1,17 @@
 # coding = utf8
 
-import tensorflow as tf
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import tensorflow as tf
 import numpy as np
 from time import time
-
 from grecx.evaluation.ranking_faiss import evaluate_mean_global_ndcg_score_with_faiss
 import grecx as grx
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
-
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
+np.set_printoptions(precision=4)
 
 #lr = 1e-3
 # l2 = 1e-4
@@ -108,13 +106,14 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
     return loss, mf_losses, l2_loss
 
 
-for epoch in range(0, epoches):
+for epoch in range(1, epoches + 1):
     if epoch % 20 == 0:
         user_h, item_h = forward(virtual_graph, training=False)
-        print("epoch = {}".format(epoch))
+        print("\nEvaluation before epoch {}".format(epoch))
         mean_ndcg_dict_faiss = evaluate_mean_global_ndcg_score_with_faiss(test_user_items_dict, train_user_items_dict,
                                                                           user_h, item_h)
         print(mean_ndcg_dict_faiss)
+        print()
 
     step_losses = []
     step_mf_losses_list = []
@@ -135,12 +134,16 @@ for epoch in range(0, epoches):
 
     end_time = time()
 
-    print("epoch = {}\tloss = {}\tmf_loss = {}\tl2_loss = {}\tused_time = {}".format(
-        epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
-        np.mean(step_l2_losses), end_time-start_time))
 
     if optimizer.learning_rate.numpy() > 1e-5:
         optimizer.learning_rate.assign(optimizer.learning_rate * 0.995)
-        print("update lr: ", optimizer.learning_rate)
+        lr_status = "update lr => {:.4f}".format(optimizer.learning_rate.numpy())
     else:
-        print("current lr: ", optimizer.learning_rate)
+        lr_status = "current lr => {:.4f}".format(optimizer.learning_rate.numpy())
+
+    print("epoch = {}\tloss = {:.4f}\tmf_loss = {:.4f}\tl2_loss = {:.4f}\t{}\ttime = {:.4f}s".format(
+        epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
+        np.mean(step_l2_losses), lr_status, end_time-start_time))
+
+    if epoch == 1:
+        print("the first epoch may take a long time to compile tf.function")

@@ -20,8 +20,7 @@ setup(
         ]
     ),
     install_requires=[
-        "tf_geometric >= 0.0.75",
-        "tf_sparse >= 0.0.8",
+        "tf_geometric >= 0.0.76",
         "numpy >= 1.17.4",
         "tensorflow == 2.4.1",
         "scikit-learn >= 0.22",
@@ -32,7 +31,7 @@ setup(
     extras_require={
 
     },
-    description="A Fair Benchmark for GNN-based Recommendation.",
+    description="An Efficient and Unified Benchmark for GNN-based Recommendation.",
     license="GNU General Public License v3.0 (See LICENSE)",
     long_description=open("README.rst", "r", encoding="utf-8").read(),
     url="https://github.com/maenzhier/GRecX"
