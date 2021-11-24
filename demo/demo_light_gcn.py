@@ -109,7 +109,7 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
 for epoch in range(1, epoches + 1):
     if epoch % 20 == 0:
         user_h, item_h = forward(virtual_graph, training=False)
-        print("\nEvaluation before epoch {}".format(epoch))
+        print("\nEvaluation before epoch {} ......".format(epoch))
         mean_ndcg_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
                                                       user_h, item_h, metrics=["ndcg"])
         print(mean_ndcg_dict)

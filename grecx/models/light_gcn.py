@@ -17,9 +17,13 @@ class LightGCN(tf.keras.Model):
         self.edge_drop_rate = edge_drop_rate
 
     @classmethod
-    def build_virtual_edge_index(cls, user_item_edge_index, num_users):
+    def build_virtual_edge_index(cls, user_item_edge_index, num_users=None):
 
         user_index, item_index = user_item_edge_index[0], user_item_edge_index[1]
+
+        if num_users is None:
+            num_users = tf.reduce_max(user_index) + 1
+
         virtual_item_index = item_index + num_users
         virtual_edge_index = tf.stack([user_index, virtual_item_index], axis=0)
         virtual_edge_index, _ = convert_edge_to_directed(virtual_edge_index, merge_modes="sum")
