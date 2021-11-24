@@ -3,6 +3,7 @@
 import tensorflow as tf
 import os
 import numpy as np
+from time import time
 
 from grecx.evaluation.ranking_faiss import evaluate_mean_global_ndcg_score_with_faiss
 import grecx as grx
@@ -119,6 +120,8 @@ for epoch in range(0, epoches):
     step_mf_losses_list = []
     step_l2_losses = []
 
+    start_time = time()
+
     for step, batch_edges in enumerate(tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
         batch_user_indices = batch_edges[:, 0]
         batch_item_indices = batch_edges[:, 1]
@@ -130,9 +133,11 @@ for epoch in range(0, epoches):
         step_mf_losses_list.append(mf_losses.numpy())
         step_l2_losses.append(l2_loss.numpy())
 
-    print("epoch = {}\tloss = {}\tmf_loss = {}\tl2_loss = {}".format(
+    end_time = time()
+
+    print("epoch = {}\tloss = {}\tmf_loss = {}\tl2_loss = {}\tused_time = {}".format(
         epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
-        np.mean(step_l2_losses)))
+        np.mean(step_l2_losses), end_time-start_time))
 
     if optimizer.learning_rate.numpy() > 1e-5:
         optimizer.learning_rate.assign(optimizer.learning_rate * 0.995)
