@@ -1,8 +1,9 @@
 # coding = utf8
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import tensorflow as tf
+# tf.config.run_functions_eagerly(True)
 import numpy as np
 from time import time
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
@@ -30,30 +31,22 @@ train_user_item_edges = user_item_edges[train_index]
 train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
-# drop_rate = 0.6
-lr = 1e-2
-# l2 = 1e-4 'ndcg@20': 0.1481
-# l2 = 5e-5 0.146
-# l2 = 2e-4 0.1475
-# l2 = 9e-5 'ndcg@20': 0.1485
-l2 = 2e-4
+lr = 3e-3
+l2 = 1e-4
 k = 3
-edge_drop_rate = 0.15
+edge_drop_rate = 0.1
 epoches = 2700
 batch_size = 8000
 
-# initializer = tf.random_normal_initializer(stddev=0.01)
-
 virtual_graph = tfg.Graph(
     x=tf.Variable(
-        # initializer([int(num_users + num_items), int(embedding_size)]),
         tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
         name="virtual_embeddings"
     ),
-    edge_index=grx.models.LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
+    edge_index=grx.models.NGCF.build_virtual_edge_index(train_user_item_edge_index, num_users)
 )
 
-model = grx.models.LightGCN(k=k, edge_drop_rate=edge_drop_rate)
+model = grx.models.NGCF(k=k, edge_drop_rate=edge_drop_rate)
 model.build_cache_for_graph(virtual_graph)
 
 
@@ -93,7 +86,7 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
 
         mf_losses = tf.nn.softplus(-(pos_logits - neg_logits))
 
-        l2_vars = [var for var in tape.watched_variables() if "embedding" in var.name]
+        l2_vars = [var for var in tape.watched_variables() if "embedding" in var.name or "kernel" in var.name]
         l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
         l2_loss = tf.add_n(l2_losses)
 
@@ -109,11 +102,10 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
 for epoch in range(1, epoches + 1):
     if epoch % 20 == 0:
         user_h, item_h = forward(virtual_graph, training=False)
-
         print("\nEvaluation before epoch {} ......".format(epoch))
-        mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                      user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
-        print(mean_results_dict)
+        mean_ndcg_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
+                                                      user_h, item_h, metrics=["ndcg"])
+        print(mean_ndcg_dict)
         print()
 
     step_losses = []
