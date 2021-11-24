@@ -4,7 +4,7 @@ import numpy as np
 import faiss
 
 
-class VectorSearch(object):
+class VectorSearchEngine(object):
     def __init__(self, vectors):
         super().__init__()
         self.vectors = np.array(vectors)

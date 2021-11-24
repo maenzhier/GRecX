@@ -6,7 +6,7 @@ import tensorflow as tf
 import numpy as np
 
 from grecx.metrics.ranking import ndcg_score, precision_score, recall_score
-from grecx.vector_search.vector_search import VectorSearch
+from grecx.vector_search.vector_search import VectorSearchEngine
 
 
 # def pred2ndcg_dict(pred_match, num_items, k_list):
@@ -244,7 +244,7 @@ def evaluate_mean_global_metrics(user_items_dict, user_mask_items_dict,
                                  user_embedding, item_embedding,
                                  k_list=[10, 20], metrics=["ndcg"]):
 
-    v_search = VectorSearch(item_embedding)
+    v_search = VectorSearchEngine(item_embedding)
 
     if isinstance(user_embedding, tf.Tensor):
         user_embedding = np.asarray(user_embedding)
