@@ -50,8 +50,6 @@ class NGCFConv(tf.keras.Model):
         h = normed_adj @ x
         h = self.gcn_dense(h) + self.interaction_dense(x * h)
 
-        h = tf.nn.l2_normalize(h, axis=-1)
-
         return h
 
 
@@ -84,12 +82,14 @@ class NGCF(tf.keras.Model):
         x, edge_index = inputs
 
         h = x
-        h_list = [h]
+        h_list = []
 
         for ngcf_conv in self.ngcf_convs:
             h = ngcf_conv([h, edge_index], training=training, cache=cache)
             h_list.append(h)
 
-        h = tf.concat(h_list, axis=-1)
+        h_list = [tf.nn.l2_normalize(h, axis=-1) for h in h_list]
+
+        h = tf.concat([x] + h_list, axis=-1)
 
         return h
