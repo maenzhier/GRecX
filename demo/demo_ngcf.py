@@ -31,8 +31,8 @@ train_user_item_edges = user_item_edges[train_index]
 train_user_item_edge_index = train_user_item_edges.transpose()
 
 embedding_size = 64
-lr = 3e-3
-l2 = 1e-4
+lr = 1e-2
+l2 = 5e-3
 k = 3
 edge_drop_rate = 0.1
 epoches = 2700
