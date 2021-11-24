@@ -13,8 +13,8 @@ class VectorSearch(object):
         self.index = faiss.IndexFlatIP(self.dim)
         self.index.add(self.vectors)
 
-    def search(self, target_vector, topK=10):
-        target_vector = np.asarray(target_vector)
-        topK_distances, topK_indices = self.index.search(target_vector, topK)
+    def search(self, query_vectors, k=10):
+        query_vectors = np.asarray(query_vectors)
+        topK_distances, topK_indices = self.index.search(query_vectors, k)
 
         return topK_distances, topK_indices

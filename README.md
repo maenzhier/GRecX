@@ -43,7 +43,7 @@ An Efficient and Unified Benchmark for GNN-based Recommendation.
 | Algo | nDCG@5 | nDCG@10 | nDCG@15 | nDCG@20 |
 | --- | --- | --- | --- | --- |
 | MF| 0.034672 | 0.037321 | 0.041864 | 0.046112 |
-| our-lightGCN| 0.040223 | 0.042649 | 0.047568 | 0.052489 (epoch:1540) |
+| our-lightGCN| 0.040223 | 0.042649 | 0.047568 | 0.052569 (epoch:760) |
 
 ***
 

@@ -110,9 +110,9 @@ for epoch in range(1, epoches + 1):
     if epoch % 20 == 0:
         user_h, item_h = forward(virtual_graph, training=False)
         print("\nEvaluation before epoch {}".format(epoch))
-        mean_ndcg_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                      user_h, item_h, metrics=["ndcg"])
-        print(mean_ndcg_dict)
+        mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
+                                                      user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
+        print(mean_results_dict)
         print()
 
     step_losses = []
