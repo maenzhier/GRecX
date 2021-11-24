@@ -141,7 +141,7 @@ for epoch in range(1, epoches + 1):
     else:
         lr_status = "current lr => {:.4f}".format(optimizer.learning_rate.numpy())
 
-    print("epoch = {}\tloss = {:.4f}\tmf_loss = {:.4f}\tl2_loss = {:.4f}\t{}\ttime = {:.4f}s".format(
+    print("epoch = {}\tloss = {:.4f}\tmf_loss = {:.4f}\tl2_loss = {:.4f}\t{}\tepoch_time = {:.4f}s".format(
         epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
         np.mean(step_l2_losses), lr_status, end_time-start_time))
 

@@ -111,24 +111,55 @@ def evaluate_mean_candidate_ndcg_score(user_items_dict, user_neg_items_dict,
 
 
 
+#
+# def evaluate_mean_global_ndcg_score_with_faiss(user_items_dict, user_mask_items_dict,
+#                                                user_embedding, item_embedding,
+#                                                k_list=[5, 10, 15, 20]):
+#     user_embedding = np.array(user_embedding)
+#     item_embedding = np.array(item_embedding)
+#     results = []
+#     user_indices = list(user_items_dict.keys())
+#     embedded_users = user_embedding[user_indices]
+#     embedding_size = user_embedding.shape[-1]
+#
+#     import faiss  # make faiss available
+#     index = faiss.IndexFlatIP(embedding_size)
+#     index.add(item_embedding)
+#
+#     max_mask_items_length = max(len(user_mask_items_dict[user]) for user in user_indices)
+#     _, user_rank_pred_items = index.search(embedded_users, k_list[-1]+max_mask_items_length)
+#
+#     for user, pred_items in tqdm(zip(user_indices, user_rank_pred_items)):
+#
+#         items = user_items_dict[user]
+#         mask_items = user_mask_items_dict[user]
+#         pred_items = [item for item in pred_items if item not in mask_items][:k_list[-1]]
+#
+#         pred_match = [1.0 if item in items else 0.0 for item in pred_items]
+#
+#         results.append(pred2ndcg_dict(pred_match, len(items), k_list))
+#
+#     return ndcg2mean_ndcg_dict(results, k_list)
+
+
+from grecx.vector_search.vector_search import VectorSearch
 
 def evaluate_mean_global_ndcg_score_with_faiss(user_items_dict, user_mask_items_dict,
                                                user_embedding, item_embedding,
                                                k_list=[5, 10, 15, 20]):
-    user_embedding = np.array(user_embedding)
-    item_embedding = np.array(item_embedding)
-    results = []
+
+    v_search = VectorSearch(item_embedding)
+
+    if isinstance(user_embedding, tf.Tensor):
+        user_embedding = np.asarray(user_embedding)
+
     user_indices = list(user_items_dict.keys())
     embedded_users = user_embedding[user_indices]
-    embedding_size = user_embedding.shape[-1]
-
-    import faiss  # make faiss available
-    index = faiss.IndexFlatIP(embedding_size)
-    index.add(item_embedding)
-
     max_mask_items_length = max(len(user_mask_items_dict[user]) for user in user_indices)
-    _, user_rank_pred_items = index.search(embedded_users, k_list[-1]+max_mask_items_length)
 
+    _, user_rank_pred_items = v_search.search(embedded_users, k_list[-1] + max_mask_items_length)
+
+    results = []
     for user, pred_items in tqdm(zip(user_indices, user_rank_pred_items)):
 
         items = user_items_dict[user]
@@ -140,8 +171,6 @@ def evaluate_mean_global_ndcg_score_with_faiss(user_items_dict, user_mask_items_
         results.append(pred2ndcg_dict(pred_match, len(items), k_list))
 
     return ndcg2mean_ndcg_dict(results, k_list)
-
-
 
 # user_items_dict = {
 #     0: [1, 2],
