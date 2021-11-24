@@ -4,8 +4,9 @@ import tensorflow as tf
 import os
 import numpy as np
 import scipy.sparse as sp
+from time import time
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from grecx.data.load_graph import generate_lightGCN_user_item_graph
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
@@ -56,6 +57,7 @@ def build_constraint_mat(train_data):
 
     return constraint_mat
 
+
 constraint_mat = build_constraint_mat(train_user_item_edges)
 
 
@@ -91,16 +93,13 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
 
 @tf_utils.function
-def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
+def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights):
     with tf.GradientTape() as tape:
         user_h, item_h = forward(training=True)
 
         embedded_users = tf.gather(user_h, batch_user_indices)
         embedded_items = tf.gather(item_h, batch_item_indices)
         embedded_neg_items = tf.gather(item_h, batch_neg_item_indices)
-
-        pos_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_item_indices], axis=1))
-        neg_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_neg_item_indices], axis=1))
 
         pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
         neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
@@ -113,7 +112,6 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
             logits=neg_logits,
             labels=tf.zeros_like(neg_logits)
         )
-
 
         mf_losses = pos_losses * (1e-6 + pos_weights) + neg_losses * (1e-6 + 1. * neg_weights)
 
@@ -130,36 +128,47 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
     return loss, mf_losses, l2_loss
 
 
-for epoch in range(0, epoches):
+for epoch in range(1, epoches):
     if epoch % 20 == 0:
         user_h, item_h = forward(training=False)
-        print("epoch = {}".format(epoch))
-        mean_ndcg_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                      user_h, item_h, metrics=["ndcg"])
-        print(mean_ndcg_dict)
+        print("\nEvaluation before epoch {}".format(epoch))
+        mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
+                                                         user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
+        print(mean_results_dict)
+        print()
 
 
     step_losses = []
     step_mf_losses_list = []
     step_l2_losses = []
 
+    start_time = time()
+
     for step, batch_edges in enumerate(tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
         batch_user_indices = batch_edges[:, 0]
         batch_item_indices = batch_edges[:, 1]
         batch_neg_item_indices = np.random.randint(0, num_items, batch_item_indices.shape)
 
-        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices)
+        pos_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_item_indices], axis=1))
+        neg_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_neg_item_indices], axis=1))
+
+        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights)
 
         step_losses.append(loss.numpy())
         step_mf_losses_list.append(mf_losses.numpy())
         step_l2_losses.append(l2_loss.numpy())
 
-    print("epoch = {}\tloss = {}\tmf_loss = {}\tl2_loss = {}".format(
-        epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
-        np.mean(step_l2_losses)))
+    end_time = time()
 
-    if optimizer.learning_rate.numpy() > 5e-5:
+    if optimizer.learning_rate.numpy() > 1e-5:
         optimizer.learning_rate.assign(optimizer.learning_rate * 0.995)
-        print("update lr: ", optimizer.learning_rate)
+        lr_status = "update lr => {:.4f}".format(optimizer.learning_rate.numpy())
     else:
-        print("current lr: ", optimizer.learning_rate)
+        lr_status = "current lr => {:.4f}".format(optimizer.learning_rate.numpy())
+
+    print("epoch = {}\tloss = {:.4f}\tmf_loss = {:.4f}\tl2_loss = {:.4f}\t{}\tepoch_time = {:.4f}s".format(
+        epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
+        np.mean(step_l2_losses), lr_status, end_time-start_time))
+
+    if epoch == 1:
+        print("the first epoch may take a long time to compile tf.function")
