@@ -8,8 +8,7 @@ import scipy.sparse as sp
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from grecx.data.load_graph import generate_lightGCN_user_item_graph
-from grecx.evaluation.ranking import evaluate_mean_global_ndcg_score
-from grecx.evaluation.ranking_faiss import evaluate_mean_global_ndcg_score_with_faiss
+from grecx.evaluation.ranking import evaluate_mean_global_metrics
 
 from grecx.config import embedding_size
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
@@ -135,9 +134,10 @@ for epoch in range(0, epoches):
     if epoch % 20 == 0:
         user_h, item_h = forward(training=False)
         print("epoch = {}".format(epoch))
-        mean_ndcg_dict_faiss = evaluate_mean_global_ndcg_score_with_faiss(test_user_items_dict, train_user_items_dict,
-                                                                          user_h, item_h)
-        print(mean_ndcg_dict_faiss)
+        mean_ndcg_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
+                                                      user_h, item_h, metrics=["ndcg"])
+        print(mean_ndcg_dict)
+
 
     step_losses = []
     step_mf_losses_list = []

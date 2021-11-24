@@ -5,13 +5,13 @@ import faiss
 
 
 class VectorSearch(object):
-    def __init__(self, base_vector):
-        super(VectorSearch, self).__init__()
-        self.base_vector = np.asarray(base_vector)
-        self.dim = self.base_vector.shape[1]
+    def __init__(self, vectors):
+        super().__init__()
+        self.vectors = np.array(vectors)
+        self.dim = self.vectors.shape[1]
 
         self.index = faiss.IndexFlatIP(self.dim)
-        self.index.add(self.base_vector)
+        self.index.add(self.vectors)
 
     def search(self, target_vector, topK=10):
         target_vector = np.asarray(target_vector)
