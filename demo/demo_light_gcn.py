@@ -1,7 +1,7 @@
 # coding = utf8
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 import tensorflow as tf
 import numpy as np
 from time import time
@@ -112,7 +112,7 @@ for epoch in range(1, epoches + 1):
 
         print("\nEvaluation before epoch {} ......".format(epoch))
         mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                      user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
+                                                      user_h, item_h, k_list=[10, 20], metrics=["precision","recall", "ndcg"])
         print(mean_results_dict)
         print()
 

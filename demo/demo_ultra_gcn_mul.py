@@ -31,8 +31,8 @@ train_user_item_edge_index = train_user_item_edges.transpose()
 drop_rate = 0.15
 lr = 1e-2
 # l2 = 5e-7
-# l2 = 1e-4
-l2 = 1e-4
+l2 = 5e-4
+# l2 = 1e-4 ('ndcg@20', 0.05191
 
 epoches = 2700
 batch_size = 5000
@@ -154,7 +154,7 @@ for epoch in range(1, epoches):
         user_h, item_h = forward(training=False)
         print("\nEvaluation before epoch {}".format(epoch))
         mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                         user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
+                                                         user_h, item_h, k_list=[10, 20], metrics=["precision", "recall", "ndcg"])
         print(mean_results_dict)
         print()
 

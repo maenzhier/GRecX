@@ -33,17 +33,42 @@ An Efficient and Unified Benchmark for GNN-based Recommendation.
 
 * BCE-loss
 
-| Algo | nDCG@5 | nDCG@10 | nDCG@15 | nDCG@20 |
-| --- | --- | --- | --- | --- |
-| MF| 0.031168 | 0.033510 | 0.037817 | 0.042061 (epoch:1300) |
-| our-lightGCN| 0.034872 | 0.037350 | 0.041520 | 0.045872 (epoch:1300) |
+[comment]: <> (| Algo | nDCG@5 | nDCG@10 | nDCG@15 | nDCG@20 |)
+
+[comment]: <> (| --- | --- | --- | --- | --- |)
+
+[comment]: <> (| MF| 0.031168 | 0.033510 | 0.037817 | 0.042061 &#40;epoch:1300&#41; |)
+
+[comment]: <> (| our-lightGCN| 0.034872 | 0.037350 | 0.041520 | 0.045872 &#40;epoch:1300&#41; |)
+
+| Algo | Precision@10 | Precision@20 | Recall@10 | Recall@20 | nDCG@10 | nDCG@20 |
+| --- | --- | --- | --- | --- | --- | --- |
+| MF |  0.029597 | 0.025495 | 0.032733 | 0.056086 | 0.037332  | 0.045805 |
+| NGCF | --- | --- | --- | --- | --- | --- |
+| LightGCN | --- | --- | --- | --- | 0.037350 | 0.045872 |
+| UltraGCN-single | 0.030652 |  0.026790 | 0.033913 | 0.058886 | 0.038576 | 0.047766 |
+| UltraGCN | 0.03553 |  0.030346 | 0.039526 | 0.067028 | 0.045365 | 0.055376 |
 
 * BPR-loss
 
-| Algo | nDCG@5 | nDCG@10 | nDCG@15 | nDCG@20 |
-| --- | --- | --- | --- | --- |
-| MF| 0.034672 | 0.037321 | 0.041864 | 0.046112 |
-| our-lightGCN| 0.040223 | 0.042649 | 0.047568 | 0.052569 (epoch:760) |
+[comment]: <> (| Algo | nDCG@5 | nDCG@10 | nDCG@15 | nDCG@20 |)
+
+[comment]: <> (| --- | --- | --- | --- | --- |)
+
+[comment]: <> (| MF| 0.034672 | 0.037321 | 0.041864 | 0.046112 |)
+
+[comment]: <> (| our-lightGCN| 0.040223 | 0.042649 | 0.047568 | 0.052569 &#40;epoch:760&#41; |)
+
+
+| Algo | Precision@10 | Precision@20 | Recall@10 | Recall@20 | nDCG@10 | nDCG@20 |
+| --- | --- | --- | --- | --- | --- | --- |
+| MF |  0.03009 | 0.026291 | 0.033211 | 0.057794 | 0.038203 | 0.047216 |
+| NGCF | --- | --- | --- | --- | --- | --- |
+| LightGCN | 0.033544 | 0.028996 | 0.037277 | 0.064128 | 0.042907 | 0.052667 |
+| UltraGCN-single | --- | --- | --- | --- | --- | --- |
+| UltraGCN | --- | --- | --- | --- | --- | --- |
+
+Note that "UltraGCN-single" uses loss with one negative sample and one negatvie loss weight
 
 ***
 

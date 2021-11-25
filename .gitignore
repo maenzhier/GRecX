@@ -148,3 +148,7 @@ demo/demo_mf_faiss.py
 /demo/demo_mf_mul.py
 /demo/demo_ultra_gcn_mul_1.py
 /demo/demo_ultra_gcn_mul_2.py
+/demo/demo_light_gcn_bce.py
+/demo/demo_mf_bce.py
+/demo/demo_mf_mul_bce.py
+/demo/demo_mf_mul_bce_1.py
