@@ -6,7 +6,7 @@ import numpy as np
 import scipy.sparse as sp
 from time import time
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 from grecx.data.load_graph import generate_lightGCN_user_item_graph
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
@@ -133,7 +133,7 @@ for epoch in range(1, epoches):
         user_h, item_h = forward(training=False)
         print("\nEvaluation before epoch {}".format(epoch))
         mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                         user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
+                                                         user_h, item_h, k_list=[10, 20], metrics=["precision", "recall", "ndcg"])
         print(mean_results_dict)
         print()
 

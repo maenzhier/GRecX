@@ -34,7 +34,8 @@ drop_rate = 0.3
 lr = 2e-3
 # l2 = 1e-4 0.0463
 # l2 = 5e-4 'ndcg@20', 0.04766
-l2 = 1e-3
+# l2 = 1e-3 'ndcg@20', 0.0473
+l2 = 6e-4
 
 epoches = 3000
 batch_size = 8000
@@ -116,7 +117,7 @@ for epoch in range(1, epoches):
         user_h, item_h = forward(training=False)
         print("\nEvaluation before epoch {}".format(epoch))
         mean_results_dict = evaluate_mean_global_metrics(test_user_items_dict, train_user_items_dict,
-                                                         user_h, item_h, k_list=[10, 20], metrics=["recall", "ndcg"])
+                                                         user_h, item_h, k_list=[10, 20], metrics=["precision", "recall", "ndcg"])
         print(mean_results_dict)
         print()
 
@@ -139,7 +140,7 @@ for epoch in range(1, epoches):
 
     end_time = time()
 
-    if optimizer.learning_rate.numpy() > 1e-5:
+    if optimizer.learning_rate.numpy() > 1e-6:
         optimizer.learning_rate.assign(optimizer.learning_rate * 0.995)
         lr_status = "update lr => {:.4f}".format(optimizer.learning_rate.numpy())
     else:
