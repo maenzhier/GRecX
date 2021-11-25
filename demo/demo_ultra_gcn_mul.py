@@ -6,9 +6,8 @@ import numpy as np
 import scipy.sparse as sp
 from time import time
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
-from grecx.data.load_graph import generate_lightGCN_user_item_graph
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
 
 from grecx.config import embedding_size
@@ -46,8 +45,8 @@ def build_constraint_mat(train_data):
     for x in train_data:
         train_mat[x[0], x[1]] = 1.0
 
-    items_D = np.sum(train_mat, axis = 0).reshape(-1)
-    users_D = np.sum(train_mat, axis = 1).reshape(-1)
+    items_D = np.sum(train_mat, axis=0).reshape(-1)
+    users_D = np.sum(train_mat, axis=1).reshape(-1)
 
     beta_uD = (np.sqrt(users_D + 1) / users_D).reshape(-1, 1)
     beta_iD = (1 / np.sqrt(items_D + 1)).reshape(1, -1)
@@ -59,11 +58,9 @@ def build_constraint_mat(train_data):
     return constraint_mat
 
 
-
 # constraint_mat = tf.reshape(build_constraint_mat(train_user_item_edges), (num_users * num_items))
-constraint_mat = build_constraint_mat(train_user_item_edges).flatten()
+constraint_mat = build_constraint_mat(train_user_item_edges)  # .flatten()
 constraint_mat = tf.Variable(constraint_mat, trainable=False)
-# constraint_mat = tf.convert_to_tensor(constraint_mat)
 
 
 
@@ -74,12 +71,13 @@ class Utrla_MF(tf.keras.Model):
         self.num_items = num_items
         self.emb_dim = emb_dim
 
-        self.user_embeddings = tf.Variable(tf.random.truncated_normal([self.num_users, self.emb_dim], stddev=np.sqrt(0.01)))
-        self.item_embeddings = tf.Variable(tf.random.truncated_normal([self.num_items, self.emb_dim], stddev=np.sqrt(0.01)))
+        self.user_embeddings = tf.Variable(
+            tf.random.truncated_normal([self.num_users, self.emb_dim], stddev=np.sqrt(0.01)))
+        self.item_embeddings = tf.Variable(
+            tf.random.truncated_normal([self.num_items, self.emb_dim], stddev=np.sqrt(0.01)))
         self.drop_layer = tf.keras.layers.Dropout(drop_rate)
 
     def call(self, inputs, training=None, mask=None):
-
         user_h = self.drop_layer(self.user_embeddings, training=training)
         #
         item_h = self.drop_layer(self.item_embeddings, training=training)
@@ -98,13 +96,24 @@ def forward(training=False):
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
 
-# @tf_utils.function
 @tf.function(experimental_compile=True)
+# @tf.function
 # def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights):
-def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
-    pos_weights = tf.gather(constraint_mat, batch_user_indices * num_items + batch_item_indices)
-    neg_weights = tf.gather(constraint_mat, tf.expand_dims(batch_user_indices * num_items, axis=1) + batch_neg_item_indices)
+def train_step(batch_user_indices, batch_item_indices):
+    # pos_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_item_indices], axis=-1))
+    # neg_weights = tf.gather_nd(constraint_mat,
+    #                         tf.stack([
+    #                             tf.tile(tf.expand_dims(batch_user_indices, axis=1), [1, tf.shape(batch_neg_item_indices)[1]]),
+    #                             batch_neg_item_indices
+    #                         ], axis=-1)
+    #                            )
 
+    batch_neg_item_indices = tf.random.uniform(shape=[tf.shape(batch_user_indices)[0], 800], maxval=num_items,
+                                               dtype=tf.int64)
+
+    batch_user_weights = tf.gather(constraint_mat, batch_user_indices)
+    pos_weights = tf.gather(batch_user_weights, batch_item_indices, batch_dims=1)
+    neg_weights = tf.gather(batch_user_weights, batch_neg_item_indices, batch_dims=1)
 
     with tf.GradientTape() as tape:
         user_h, item_h = forward(training=True)
@@ -149,22 +158,24 @@ for epoch in range(1, epoches):
         print(mean_results_dict)
         print()
 
-
     step_losses = []
     step_mf_losses_list = []
     step_l2_losses = []
 
     start_time = time()
 
-    for step, batch_edges in enumerate(tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
-        batch_edges = batch_edges.numpy()
+    for step, batch_edges in enumerate(
+            tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
+        batch_edges = batch_edges
+
         batch_user_indices = batch_edges[:, 0]
         batch_item_indices = batch_edges[:, 1]
 
         size = batch_user_indices.shape[0]
 
         # batch_neg_item_indices = tf.convert_to_tensor(np.random.choice(np.arange(num_items), size=(size, 800), replace=True))
-        batch_neg_item_indices = np.random.choice(np.arange(num_items), size=(size, 800), replace=True)
+        # batch_neg_item_indices = np.random.choice(np.arange(num_items), size=[size, 800], replace=True)
+        # batch_neg_item_indices = tf.convert_to_tensor(batch_neg_item_indices)
 
         # mat = tf.gather(constraint_mat, batch_user_indices)
 
@@ -176,7 +187,6 @@ for epoch in range(1, epoches):
         # pos_weights = tf.convert_to_tensor([tf.gather(mat[i], batch_item_indices[i]) for i in range(size)])
         # neg_weights = tf.convert_to_tensor([tf.gather(mat[i], batch_neg_item_indices[i]) for i in range(size)])
 
-
         # pos_weights = constraint_mat[batch_user_indices * num_items + batch_item_indices]
         # neg_weights = constraint_mat[np.expand_dims(batch_user_indices * num_items, axis=1) + batch_neg_item_indices]
 
@@ -186,7 +196,9 @@ for epoch in range(1, epoches):
         # neg_weights = tf.reshape(neg_weights, (size, 800))
         # batch_neg_item_indices = tf.reshape(batch_neg_item_indices, (size, 800))
         # loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights)
-        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices)
+        # start_time = tf.timestamp()
+        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices)  # , batch_neg_item_indices)
+        # print("outside time: ", tf.timestamp() - start_time)
         # print(time() - t1)
         step_losses.append(loss.numpy())
         step_mf_losses_list.append(mf_losses.numpy())
@@ -202,7 +214,7 @@ for epoch in range(1, epoches):
 
     print("epoch = {}\tloss = {:.4f}\tmf_loss = {:.4f}\tl2_loss = {:.4f}\t{}\tepoch_time = {:.4f}s".format(
         epoch, np.mean(step_losses), np.mean(np.concatenate(step_mf_losses_list, axis=0)),
-        np.mean(step_l2_losses), lr_status, end_time-start_time))
+        np.mean(step_l2_losses), lr_status, end_time - start_time))
 
     if epoch == 1:
         print("the first epoch may take a long time to compile tf.function")
