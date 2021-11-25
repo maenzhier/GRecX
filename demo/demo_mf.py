@@ -32,9 +32,11 @@ test_user_items_dict = data_dict["test_user_items_dict"]
 
 drop_rate = 0.3
 lr = 2e-3
-l2 = 1e-4
+# l2 = 1e-4 0.0463
+# l2 = 5e-4 'ndcg@20', 0.04766
+l2 = 1e-3
 
-epoches = 2700
+epoches = 3000
 batch_size = 8000
 
 

@@ -6,7 +6,7 @@ import numpy as np
 import scipy.sparse as sp
 from time import time
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 
 from grecx.data.load_graph import generate_lightGCN_user_item_graph
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
@@ -32,8 +32,8 @@ train_user_item_edge_index = train_user_item_edges.transpose()
 drop_rate = 0.15
 lr = 1e-2
 # l2 = 5e-7
+# l2 = 1e-4
 l2 = 1e-4
-# l2 = 1e-4 0.0475
 
 epoches = 2700
 batch_size = 5000
@@ -53,12 +53,18 @@ def build_constraint_mat(train_data):
     beta_iD = (1 / np.sqrt(items_D + 1)).reshape(1, -1)
 
     constraint_mat = beta_uD.dot(beta_iD)  # n_user * m_item
-    constraint_mat = tf.convert_to_tensor(constraint_mat, dtype=tf.float32)
+    # constraint_mat = tf.convert_to_tensor(constraint_mat, dtype=tf.float32)
+    constraint_mat = np.array(constraint_mat, dtype=np.float32)
 
     return constraint_mat
 
 
-constraint_mat = build_constraint_mat(train_user_item_edges)
+
+# constraint_mat = tf.reshape(build_constraint_mat(train_user_item_edges), (num_users * num_items))
+constraint_mat = build_constraint_mat(train_user_item_edges).flatten()
+constraint_mat = tf.Variable(constraint_mat, trainable=False)
+# constraint_mat = tf.convert_to_tensor(constraint_mat)
+
 
 
 class Utrla_MF(tf.keras.Model):
@@ -92,8 +98,14 @@ def forward(training=False):
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
 
-@tf_utils.function
-def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights):
+# @tf_utils.function
+@tf.function(experimental_compile=True)
+# def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights):
+def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
+    pos_weights = tf.gather(constraint_mat, batch_user_indices * num_items + batch_item_indices)
+    neg_weights = tf.gather(constraint_mat, tf.expand_dims(batch_user_indices * num_items, axis=1) + batch_neg_item_indices)
+
+
     with tf.GradientTape() as tape:
         user_h, item_h = forward(training=True)
 
@@ -102,7 +114,7 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, p
         embedded_neg_items = tf.gather(item_h, batch_neg_item_indices)
 
         pos_logits = tf.reduce_sum(embedded_users * embedded_items, axis=-1)
-        neg_logits = tf.reduce_sum(embedded_users * embedded_neg_items, axis=-1)
+        neg_logits = tf.reduce_sum((tf.expand_dims(embedded_users, axis=1) * embedded_neg_items), axis=-1)
 
         pos_losses = tf.nn.sigmoid_cross_entropy_with_logits(
             logits=pos_logits,
@@ -113,7 +125,7 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, p
             labels=tf.zeros_like(neg_logits)
         )
 
-        mf_losses = pos_losses * (1e-6 + pos_weights) + neg_losses * (1e-6 + 1. * neg_weights) * 300
+        mf_losses = pos_losses * (1e-6 + pos_weights) + tf.reduce_mean(neg_losses * (1e-6 + neg_weights), axis=1) * 300
 
         l2_vars = [model.user_embeddings, model.item_embeddings]
         l2_losses = [tf.nn.l2_loss(var) for var in l2_vars]
@@ -145,15 +157,37 @@ for epoch in range(1, epoches):
     start_time = time()
 
     for step, batch_edges in enumerate(tf.data.Dataset.from_tensor_slices(train_user_item_edges).shuffle(1000000).batch(batch_size)):
+        batch_edges = batch_edges.numpy()
         batch_user_indices = batch_edges[:, 0]
         batch_item_indices = batch_edges[:, 1]
-        batch_neg_item_indices = np.random.randint(0, num_items, batch_item_indices.shape)
 
-        pos_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_item_indices], axis=1))
-        neg_weights = tf.gather_nd(constraint_mat, tf.stack([batch_user_indices, batch_neg_item_indices], axis=1))
+        size = batch_user_indices.shape[0]
 
-        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights)
+        # batch_neg_item_indices = tf.convert_to_tensor(np.random.choice(np.arange(num_items), size=(size, 800), replace=True))
+        batch_neg_item_indices = np.random.choice(np.arange(num_items), size=(size, 800), replace=True)
 
+        # mat = tf.gather(constraint_mat, batch_user_indices)
+
+        # t1 = time()
+        # pos_weights = tf.gather(constraint_mat, batch_user_indices * num_items + batch_item_indices)
+        # neg_weights = tf.gather(constraint_mat, tf.broadcast_to(tf.expand_dims(batch_user_indices * num_items, axis=1), (size, 800)) + batch_neg_item_indices)
+        # neg_weights = tf.gather(constraint_mat, tf.expand_dims(batch_user_indices * num_items, axis=1) + batch_neg_item_indices)
+        # print(time() - t1)
+        # pos_weights = tf.convert_to_tensor([tf.gather(mat[i], batch_item_indices[i]) for i in range(size)])
+        # neg_weights = tf.convert_to_tensor([tf.gather(mat[i], batch_neg_item_indices[i]) for i in range(size)])
+
+
+        # pos_weights = constraint_mat[batch_user_indices * num_items + batch_item_indices]
+        # neg_weights = constraint_mat[np.expand_dims(batch_user_indices * num_items, axis=1) + batch_neg_item_indices]
+
+        # batch_neg_item_indices = tf.reshape(tf.convert_to_tensor(batch_neg_item_indices), (size * 800))
+        # batch_neg_user_indices = tf.reshape(tf.broadcast_to(tf.reshape(batch_user_indices, (size, 1)), (size, 800)), (size * 800))
+        # neg_weights = tf.gather_nd(constraint_mat, tf.stack([batch_neg_user_indices, batch_neg_item_indices], axis=1))
+        # neg_weights = tf.reshape(neg_weights, (size, 800))
+        # batch_neg_item_indices = tf.reshape(batch_neg_item_indices, (size, 800))
+        # loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices, pos_weights, neg_weights)
+        loss, mf_losses, l2_loss = train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices)
+        # print(time() - t1)
         step_losses.append(loss.numpy())
         step_mf_losses_list.append(mf_losses.numpy())
         step_l2_losses.append(l2_loss.numpy())
