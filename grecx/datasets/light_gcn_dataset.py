@@ -20,7 +20,8 @@ class LightGCNDataset(DownloadableDataset):
         """
         super().__init__(dataset_name,
                          download_urls=[
-                             "https://github.com/maenzhier/grecx_datasets/raw/main/yelp/{}.zip".format(dataset_name)
+                             "https://github.com/maenzhier/grecx_datasets/raw/main/{}/{}.zip".format(
+                                 dataset_name.replace("light_gcn_", ""), dataset_name)
                          ],
                          download_file_name="{}.zip".format(dataset_name),
                          cache_name="cache.p",
