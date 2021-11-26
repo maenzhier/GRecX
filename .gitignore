@@ -152,3 +152,5 @@ demo/demo_mf_faiss.py
 /demo/demo_mf_bce.py
 /demo/demo_mf_mul_bce.py
 /demo/demo_mf_mul_bce_1.py
+/demo/demo_ultra_gcn_mul_c.py
+/demo/demo_mf_mul_bce_2.py
