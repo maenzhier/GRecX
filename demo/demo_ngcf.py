@@ -1,6 +1,9 @@
 # coding = utf8
 
 import os
+
+from grecx.layers import NGCF
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import tensorflow as tf
 # tf.config.run_functions_eagerly(True)
@@ -43,10 +46,10 @@ virtual_graph = tfg.Graph(
         tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
         name="virtual_embeddings"
     ),
-    edge_index=grx.models.NGCF.build_virtual_edge_index(train_user_item_edge_index, num_users)
+    edge_index=NGCF.build_virtual_edge_index(train_user_item_edge_index, num_users)
 )
 
-model = grx.models.NGCF(k=k, edge_drop_rate=edge_drop_rate)
+model = NGCF(k=k, edge_drop_rate=edge_drop_rate)
 model.build_cache_for_graph(virtual_graph)
 
 

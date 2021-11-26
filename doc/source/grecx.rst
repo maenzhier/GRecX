@@ -10,7 +10,7 @@ Subpackages
    grecx.datasets
    grecx.evaluation
    grecx.metrics
-   grecx.models
+   grecx.layers
    grecx.utils
    grecx.vector_search
 
