@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 import tf_sparse as tfs
-from grecx.models.light_gcn import LightGCN
+from grecx.layers.light_gcn import LightGCN
 
 
 class NGCFConv(tf.keras.Model):

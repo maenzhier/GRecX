@@ -1,6 +1,9 @@
 # coding = utf8
 
 import os
+
+from grecx.layers import LightGCN
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 import tensorflow as tf
 import numpy as np
@@ -50,10 +53,10 @@ virtual_graph = tfg.Graph(
         tf.random.truncated_normal([num_users + num_items, embedding_size], stddev=1/np.sqrt(embedding_size)),
         name="virtual_embeddings"
     ),
-    edge_index=grx.models.LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
+    edge_index=LightGCN.build_virtual_edge_index(train_user_item_edge_index, num_users)
 )
 
-model = grx.models.LightGCN(k=k, edge_drop_rate=edge_drop_rate)
+model = LightGCN(k=k, edge_drop_rate=edge_drop_rate)
 model.build_cache_for_graph(virtual_graph)
 
 

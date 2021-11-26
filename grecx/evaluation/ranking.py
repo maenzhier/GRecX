@@ -246,8 +246,8 @@ def evaluate_mean_global_metrics(user_items_dict, user_mask_items_dict,
 
     v_search = VectorSearchEngine(item_embedding)
 
-    if isinstance(user_embedding, tf.Tensor):
-        user_embedding = np.asarray(user_embedding)
+    if tf.is_tensor(user_embedding):
+        user_embedding = np.array(user_embedding)
 
     user_indices = list(user_items_dict.keys())
     embedded_users = user_embedding[user_indices]
@@ -272,7 +272,8 @@ def evaluate_mean_global_metrics(user_items_dict, user_mask_items_dict,
         for k in k_list:
             names.append("{}@{}".format(metric, k))
 
-    return list(zip(names, np.mean(res_scores, axis=0, keepdims=False)))
+    # return list(zip(names, np.mean(res_scores, axis=0, keepdims=False)))
+    return dict(zip(names, np.mean(res_scores, axis=0, keepdims=False)))
 
 
 # def evaluate_mean_global_metrics(user_items_dict, user_mask_items_dict,
