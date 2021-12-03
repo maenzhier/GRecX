@@ -1,7 +1,7 @@
 # coding = utf8
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 import tensorflow as tf
 import numpy as np
 from time import time
@@ -10,11 +10,17 @@ from grecx.datasets.light_gcn_dataset import LightGCNDataset
 from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
 from grecx.layers import UserItemEmbedding
-from grecx.config import embedding_size
+# from grecx.config import embedding_size
 from tf_geometric.utils import tf_utils
 
+# precision@10: 0.0738
+# precision@20: 0.0536
+# recall@10: 0.1223
+# recall@20: 0.1749
+# ndcg@10: 0.1323
+# ndcg@20: 0.1477
 
-dataset = "light_gcn_yelp"  # "light_gcn_yelp" | "light_gcn_gowalla" | "light_gcn_amazon-book"
+dataset = "light_gcn_gowalla"  # "light_gcn_yelp" | "light_gcn_gowalla" | "light_gcn_amazon-book"
 
 data_dict = LightGCNDataset(dataset).load_data()
 
@@ -28,9 +34,11 @@ test_user_items_dict = data_dict["test_user_items_dict"]
 
 drop_rate = 0.3
 lr = 5e-3
-l2 = 1e-4
+l2 = 3e-4
 
-epoches = 3000
+embedding_size = 256
+
+epoches = 4000
 batch_size = 8000
 
 # MF model only relies on user and item embeddings

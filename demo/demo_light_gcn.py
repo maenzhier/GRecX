@@ -4,23 +4,22 @@ import os
 
 from grecx.layers import LightGCN
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import tensorflow as tf
 import numpy as np
 from time import time
 from grecx.evaluation.ranking import evaluate_mean_global_metrics
 import grecx as grx
-from grecx.datasets import LightGCNYelpDataset, LightGCNGowallaDataset, LightGCNAmazonbookDataset
+from grecx.datasets.light_gcn_dataset import LightGCNDataset
 import tf_geometric as tfg
 from tf_geometric.utils import tf_utils
 
 np.set_printoptions(precision=4)
 
-#lr = 1e-3
-# l2 = 1e-4
-data_dict = LightGCNYelpDataset().load_data()
-# data_dict = LightGCNGowallaDataset().load_data()
-# data_dict = LightGCNAmazonbookDataset().load_data()
+
+dataset = "light_gcn_yelp"  # "light_gcn_yelp" | "light_gcn_gowalla" | "light_gcn_amazon-book"
+
+data_dict = LightGCNDataset(dataset).load_data()
 
 num_users = data_dict["num_users"]
 num_items = data_dict["num_items"]
