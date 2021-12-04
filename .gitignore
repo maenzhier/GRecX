@@ -159,3 +159,9 @@ demo/demo-backs
 /demo/demo_mf_fc3.py
 /demo/demo_mf_fc4.py
 /demo/demo_mf_fc_1.py
+/demo/demo_mf_256_bce.py
+/demo/demo_mf_fc4_gowalla.py
+/demo/demo_mf_fc_1_gowalla.py
+/demo/demo_mf_gowalla.py
+/demo/demo_mf_gowalla_bce.py
+/demo/demo_mf_lightgcn_data.py
