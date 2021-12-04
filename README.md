@@ -7,9 +7,24 @@ An Efficient and Unified Benchmark for GNN-based Recommendation.
 
 ### Homepage and Documentation
 
-+ Homepage: []()
-+ Documentation: []()
++ Homepage: [https://github.com/maenzhier/GRecX](https://github.com/maenzhier/GRecX)
 + Paper: [GRecX: An Efficient and Unified Benchmark for GNN-based Recommendation](https://arxiv.org/pdf/2111.10342.pdf)
+
+
+### Example Benchmark: Performance on Yelp and Gowalla with BPR Loss
+
+
+<p align="center">
+<img src="plots/bpr_yelp.png" width="300"/>
+Performance on Yelp with BPR Loss
+</p>
+
+
+<p align="center">
+<img src="plots/bpr_gowalla.png" width="300"/>
+Performance on Gowalla with BPR Loss
+</p>
+
 
 
 ### Preliminary Comparison

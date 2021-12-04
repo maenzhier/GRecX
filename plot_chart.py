@@ -29,7 +29,8 @@ plt.rc('legend', title_fontsize=BIGGER_SIZE)
 
 csv_base_dir = "csv_results"
 
-csv_name = "bpr_yelp"
+# csv_name = "bpr_yelp"
+csv_name = "bpr_gowalla"
 
 csv_fpath = os.path.join(csv_base_dir, "{}.csv".format(csv_name))
 
