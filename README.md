@@ -13,15 +13,15 @@ An Efficient and Unified Benchmark for GNN-based Recommendation.
 
 ### Example Benchmark: Performance on Yelp and Gowalla with BPR Loss
 
-Performance on Yelp with BPR Loss
+Performance on Yelp with BPR Loss:
 <p align="center">
-<img src="plots/bpr_yelp.png" width="400"/>
+<img src="plots/bpr_yelp.png" width="500"/>
 </p>
 
 
 Performance on Gowalla with BPR Loss:
 <p align="center">
-<img src="plots/bpr_gowalla.png" width="400"/>
+<img src="plots/bpr_gowalla.png" width="500"/>
 </p>
 
 

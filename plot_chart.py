@@ -29,8 +29,8 @@ plt.rc('legend', title_fontsize=BIGGER_SIZE)
 
 csv_base_dir = "csv_results"
 
-csv_name = "bpr_yelp"
-# csv_name = "bpr_gowalla"
+# csv_name = "bpr_yelp"
+csv_name = "bpr_gowalla"
 
 csv_fpath = os.path.join(csv_base_dir, "{}.csv".format(csv_name))
 
@@ -50,7 +50,7 @@ fig, ax = plt.subplots(figsize=(13, 8))
 ax.xaxis.labelpad = 10
 
 
-# ax.yaxis.set_label_position("right")
+ax.yaxis.set_label_position("right")
 
 g = sns.barplot(
     ax=ax,
