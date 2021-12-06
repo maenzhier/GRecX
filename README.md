@@ -84,7 +84,7 @@ Performance on Gowalla with BPR Loss:
 
 Note that "UltraGCN-single" uses loss with one negative sample and one negatvie loss weight
 
-***
+[comment]: <> (***)
 
 [comment]: <> (#### LightGCN-Gowalla dataset &#40;featureless&#41;)
 
@@ -125,6 +125,15 @@ Note that "UltraGCN-single" uses loss with one negative sample and one negatvie 
 
 [comment]: <> (#### LightGCN-Amazon-book dataset &#40;featureless&#41;)
 
+### Demo
+
+We recommend you get started with some demos.
+
++ [Matrix Factorization (MF)](demo/demo_mf.py)
++ [MLP + MF](demo/demo_mf_fc.py)
++ [NGCF](demo/demo_ngcf.py)
++ [LightGCN](demo/demo_light_gcn.py)
++ [UltraGCN](demo/demo_ultra_gcn.py)
 
 
 ### Cite
