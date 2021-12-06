@@ -5,13 +5,13 @@
 # GRecX
 An Efficient and Unified Benchmark for GNN-based Recommendation.
 
-### Homepage and Documentation
+## Homepage and Documentation
 
 + Homepage: [https://github.com/maenzhier/GRecX](https://github.com/maenzhier/GRecX)
 + Paper: [GRecX: An Efficient and Unified Benchmark for GNN-based Recommendation](https://arxiv.org/pdf/2111.10342.pdf)
 
 
-### Example Benchmark: Performance on Yelp and Gowalla with BPR Loss
+## Example Benchmark: Performance on Yelp and Gowalla with BPR Loss
 
 Performance on Yelp with BPR Loss:
 <p align="center">
@@ -24,12 +24,20 @@ Performance on Gowalla with BPR Loss:
 <img src="plots/bpr_gowalla.png" width="500"/>
 </p>
 
+## Demo
+
+We recommend you get started with some demos.
+
++ [Matrix Factorization (MF)](demo/demo_mf.py)
++ [MLP + MF](demo/demo_mf_fc.py)
++ [NGCF](demo/demo_ngcf.py)
++ [LightGCN](demo/demo_light_gcn.py)
++ [UltraGCN](demo/demo_ultra_gcn.py)
+
+## Preliminary Comparison
 
 
-### Preliminary Comparison
-
-
-#### LightGCN-Yelp dataset (featureless)
+### LightGCN-Yelp dataset (featureless)
 
 [comment]: <> (| Algo | nDCG@20 | recall@20 | precision@20 |)
 
@@ -125,18 +133,10 @@ Note that "UltraGCN-single" uses loss with one negative sample and one negatvie 
 
 [comment]: <> (#### LightGCN-Amazon-book dataset &#40;featureless&#41;)
 
-### Demo
-
-We recommend you get started with some demos.
-
-+ [Matrix Factorization (MF)](demo/demo_mf.py)
-+ [MLP + MF](demo/demo_mf_fc.py)
-+ [NGCF](demo/demo_ngcf.py)
-+ [LightGCN](demo/demo_light_gcn.py)
-+ [UltraGCN](demo/demo_ultra_gcn.py)
 
 
-### Cite
+
+## Cite
 
 If you use GRecX in a scientific publication, we would appreciate citations to the following paper:
 
