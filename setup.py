@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="grecx",
     python_requires='>3.5.0',
-    version="0.0.2-dev",
+    version="0.0.3-dev",
     author="Desheng Cai",
     author_email="caidsml@gmail.com",
     packages=find_packages(
@@ -31,6 +31,7 @@ setup(
     extras_require={
 
     },
+    package_data={'grecx': ['metrics/libranking.so']},
     description="An Efficient and Unified Benchmark for GNN-based Recommendation.",
     license="GNU General Public License v3.0 (See LICENSE)",
     long_description=open("README.rst", "r", encoding="utf-8").read(),

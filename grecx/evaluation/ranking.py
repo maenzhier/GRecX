@@ -212,13 +212,13 @@ from grecx.vector_search.vector_search import VectorSearchEngine
 #     return mean_ndcg_dict
 
 def score(ground_truth, pred_items, k_list, metrics):
-    pred_match = [1.0 if item in ground_truth else 0.0 for item in pred_items]
+    pred_match = [1 if item in ground_truth else 0 for item in pred_items]
 
     max_k = k_list[-1]
     if len(ground_truth) > max_k:
-        ndcg_gold = [1.] * max_k
+        ndcg_gold = [1] * max_k
     else:
-        ndcg_gold = [1.] * len(ground_truth) + [0.] * (max_k - len(ground_truth))
+        ndcg_gold = [1] * len(ground_truth) + [0] * (max_k - len(ground_truth))
 
     res_score = []
     for metric in metrics:

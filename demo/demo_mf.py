@@ -72,7 +72,7 @@ def train_step(batch_user_indices, batch_item_indices, batch_neg_item_indices):
     return loss, mf_losses, l2_loss
 
 
-for epoch in range(1, epoches):
+for epoch in range(0, epoches):
 
     if epoch % 20 == 0:
         print("\nEvaluation before epoch {}".format(epoch))
