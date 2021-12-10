@@ -46,7 +46,8 @@ def ndcg_score(reference, hypothesis):
 
 def load_c_ndcg_score():
 
-    lib_path = os.path.join(os.path.dirname(__file__), "libranking.so")
+    lib_name = "libranking.dll" if os.name == "nt" else "libranking.so"
+    lib_path = os.path.join(os.path.dirname(__file__), lib_name)
     lib = ctypes.CDLL(lib_path)
     c_ndcg_score = lib.ndcg_score
     c_ndcg_score.restype = ctypes.c_double
