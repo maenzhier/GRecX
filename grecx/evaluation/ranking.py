@@ -247,7 +247,9 @@ def evaluate_mean_global_metrics(user_items_dict, user_mask_items_dict,
     v_search = VectorSearchEngine(item_embedding)
 
     if tf.is_tensor(user_embedding):
-        user_embedding = np.array(user_embedding)
+        user_embedding = user_embedding.numpy()
+    else:
+        user_embedding = np.asarray(user_embedding)
 
     user_indices = list(user_items_dict.keys())
     embedded_users = user_embedding[user_indices]
