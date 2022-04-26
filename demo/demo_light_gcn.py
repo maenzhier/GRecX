@@ -4,7 +4,7 @@ import os
 
 from grecx.layers import LightGCN
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 import tensorflow as tf
 import numpy as np
 from time import time

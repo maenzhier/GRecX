@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="grecx",
     python_requires='>3.5.0',
-    version="0.0.3",
+    version="0.0.4",
     author="Desheng Cai",
     author_email="caidsml@gmail.com",
     packages=find_packages(
@@ -20,7 +20,7 @@ setup(
         ]
     ),
     install_requires=[
-        "tf_geometric >= 0.0.77",
+        "tf_geometric >= 0.0.83",
         "numpy >= 1.17.4",
         "tensorflow == 2.4.1",
         "scikit-learn >= 0.22",
