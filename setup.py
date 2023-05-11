@@ -22,7 +22,7 @@ setup(
         ]
     ),
     install_requires=[
-        "tf_geometric >= 0.0.83",
+        "tf_geometric >= 0.1.5",
         "numpy >= 1.17.4",
         # "tensorflow == 2.4.1",
         "scikit-learn >= 0.22",
