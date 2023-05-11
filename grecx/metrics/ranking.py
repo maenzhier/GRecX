@@ -76,10 +76,10 @@ except:
 
 
 def precision_score(reference, hypothesis):
-    result = np.sum(hypothesis, dtype=np.float)/len(hypothesis)
+    result = np.sum(hypothesis, dtype=np.float32)/len(hypothesis)
     return result
 
 
 def recall_score(reference, hypothesis):
-    result = np.sum(hypothesis, dtype=np.float) / len(reference)
+    result = np.sum(hypothesis, dtype=np.float32) / len(reference)
     return result

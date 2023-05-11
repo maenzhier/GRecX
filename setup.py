@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 setup(
     name="grecx",
     python_requires='>3.5.0',
-    version="0.0.6",
+    version="0.0.7",
     author="Desheng Cai",
     author_email="caidsml@gmail.com",
     packages=find_packages(
